@@ -40,7 +40,6 @@ export const AuthProvider = ({ children }) => {
                 localStorage.removeItem('token');
                 setUser(null);
                 setIsAuthenticated(false);
-                localStorage.removeItem('token');
             } catch (err) {
                 console.log('logout failed: axios failed')
             }

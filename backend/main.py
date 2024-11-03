@@ -1,5 +1,6 @@
 import redis
-from fastapi import FastAPI, Depends, HTTPException, status, WebSocket, WebSocketDisconnect, WebSocketException
+from fastapi import FastAPI, Depends, HTTPException, status, WebSocket, WebSocketDisconnect, WebSocketException, File, UploadFile
+from fastapi.responses import FileResponse
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.security import OAuth2PasswordBearer
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -11,6 +12,8 @@ from backend.auth import get_password_hash, verify_password, \
 from pydantic import BaseModel
 from datetime import datetime, timedelta
 from typing import List
+import os
+import shutil
 
 redis_client = redis.StrictRedis(host='localhost', port=6379, db=0, decode_responses=True)
 TOKEN_EXPIRATION_MINUTES = 30
@@ -27,6 +30,9 @@ app.add_middleware(
 
 # Store connected WebSocket clients
 clients: List[WebSocket] = []
+
+UPLOAD_DIR = "uploads"
+os.makedirs(UPLOAD_DIR, exist_ok=True)
 
 async def get_db():
     async with SessionLocal() as session:
@@ -75,9 +81,9 @@ async def logout(token: str = Depends(oauth2_scheme)):
     return {"message": "Successfully logged out"}
 
 # Dependency to check if a token is blacklisted
-async def is_blacklisted(token: str):
-    if redis_client.get(f"blacklist:{token}") is not None:
-        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Token has been revoked")
+# async def is_blacklisted(token: str):
+#     if redis_client.get(f"blacklist:{token}") is not None:
+#         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Token has been revoked")
 
 @app.get("/protected/")
 async def protected_route(token: str = Depends(oauth2_scheme)):
@@ -102,6 +108,20 @@ async def websocket_endpoint(websocket: WebSocket):
                 await client.send_text(f"Message from server: {data}")
     except WebSocketDisconnect:
         clients.remove(websocket)  # Remove client if they disconnect
+
+@app.post("/upload-audio")
+async def upload_audio(file: UploadFile = File(...)):
+    file_location = f"{UPLOAD_DIR}/{file.filename}"
+
+    with open(file_location, "wb") as buffer:
+        shutil.copyfileobj(file.file, buffer)
+
+    return {"filename": file.filename, "message": "File uploaded successfully"}
+
+@app.get("/uploads/{filename}")
+async def get_uploaded_file(filename: str):
+    file_path = os.path.join(UPLOAD_DIR, filename)
+    return FileResponse(path=file_path, media_type='audio/mpeg', filename=filename)
 
 # @app.get("/items/")
 # async def read_items(db: AsyncSession = Depends(get_db)):

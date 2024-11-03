@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import useWebSocket from '../utils/hooks/useWebSocket';
+import useWebSocket from '../hooks/useWebSocket';
+import AudioUpload from './AudioUpload';
 
 
 export default function Main({ isAuthenticated }) {
@@ -16,8 +17,9 @@ export default function Main({ isAuthenticated }) {
 
     return (
         <div>
-            <h2>WebSocket Chat</h2>
-            <form onSubmit={handleSubmit}>
+            <h2>Sounds queue:</h2>
+            {/* <form onSubmit={handleSubmit}>
+                <label>Add a new sound: </label>
                 <input
                     type="text"
                     value={input}
@@ -25,10 +27,12 @@ export default function Main({ isAuthenticated }) {
                     placeholder="Type a message"
                 />
                 <button type="submit">Send</button>
-            </form>
+            </form> */}
+
+            <AudioUpload />
 
             <div>
-            <h3>Messages:</h3>
+            <h3>Sounds:</h3>
             <ul>
                 {messages.map((msg, index) => (
                     <li key={index}>{msg}</li>

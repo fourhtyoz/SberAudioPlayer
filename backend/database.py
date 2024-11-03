@@ -5,5 +5,9 @@ from sqlalchemy.orm import sessionmaker, declarative_base
 DATABASE_URL = "postgresql+asyncpg://postgres:123456@localhost/postgres"
 
 engine = create_async_engine(DATABASE_URL)
-SessionLocal = sessionmaker(bind=engine, class_=AsyncSession, expire_on_commit=False)
+SessionLocal = sessionmaker(bind=engine, 
+                            class_=AsyncSession, 
+                            expire_on_commit=False,
+                            autocommit=False, 
+                            autoflush=False)
 Base = declarative_base()

@@ -1,10 +1,13 @@
 from fastapi import FastAPI, UploadFile, File, HTTPException
-from fastapi.responses import JSONResponse
 from queue import Queue
 from typing import List, Dict
+import grpc
+from player_service import audio_pb2, audio_pb2_grpc
+
 
 app = FastAPI()
 audio_queue = Queue()
+SOUND_EXECUTION_SERVICE_ADDRESS = "localhost:50051"
 
 
 @app.post("/add-audio/")
@@ -29,27 +32,26 @@ async def get_queue() -> List[Dict[str, str]]:
     return response
 
 
+@app.get('/play-audio/')
+async def play_audio(filename: str):
+    async with grpc.aio.insecure_channel(SOUND_EXECUTION_SERVICE_ADDRESS) as channel:
+        stub = audio_pb2_grpc.SoundExecutionServiceStub(channel)
+        request = audio_pb2.AudioRequest(filename=filename)
+        try:
+            response = await stub.PlayAudio(request)
+            print('response', response)
+            if response.success:
+                print(f"Successfully started playback: {filename}")
+            else:
+                print(f"Failed to play audio: {response.message}")
+        except grpc.RpcError as e:
+            raise HTTPException(status_code=500, detail=f"gRPC error: {e}")
 
-
-# import grpc
-# from concurrent import futures
-# from player_service.proto import player_pb2_grpc, player_pb2
-
-# class PlayerService(player_pb2_grpc.PlayerServiceServicer):
-#     def PlayAudio(self, request, context):
-#         print(f"Playing audio: {request.audio_id} from {request.url}")
-#         return player_pb2.PlayResponse(success=True)
-
-#     def StopAudio(self, request, context):
-#         print("Stopping audio")
-#         return player_pb2.StopResponse(success=True)
-
-# def serve():
-#     server = grpc.server(futures.ThreadPoolExecutor(max_workers=10))
-#     player_pb2_grpc.add_PlayerServiceServicer_to_server(PlayerService(), server)
-#     server.add_insecure_port('[::]:50051')
-#     server.start()
-#     server.wait_for_termination()
-
-# if __name__ == '__main__':
-#     serve()
+# # Main loop to process the queue
+# async def process_queue():
+#     while True:
+#         if not audio_queue.empty():
+#             filename = audio_queue.get()
+#             await play_audio(filename)
+#         else:
+#             await asyncio.sleep(1)  # Wait before checking the queue again

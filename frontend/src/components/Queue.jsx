@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import axios from "axios";
 
 
 export default function Queue() {
@@ -10,10 +11,20 @@ export default function Queue() {
         return () => ws.close();
     }, []);
 
+    const handlePlay = async (filename) => {
+        try {
+            const response = await axios.get(`http://localhost:8000/play-audio/?filename=${filename}`)
+            console.log('response', response)
+        } catch (error) {
+            console.error('error', error)
+        }
+    };
+
+
     return (
         <div>
             <h2>Queue:</h2>
-            {queue.map((item, index) => <div key={index} >{item.filename}</div>)}
+            {queue.map((item, index) => <div key={index} >{item.filename} <button onClick={() => handlePlay(item.filename)} >play</button></div>)}
         </div>
     );
 }

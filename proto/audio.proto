@@ -1,0 +1,18 @@
+syntax = "proto3";
+
+package audio;
+
+// Define the messages
+message AudioRequest {
+    string filename = 1;
+}
+
+message PlayResponse {
+    bool success = 1;
+    string message = 2;
+}
+
+// Define the services
+service SoundExecutionService {
+    rpc PlayAudio (AudioRequest) returns (PlayResponse);
+}

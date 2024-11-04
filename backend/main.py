@@ -16,7 +16,6 @@ from backend.models import User
 from backend.auth import get_password_hash, verify_password, \
                          create_access_token, decode_access_token, \
                          get_current_user
-from backend.player_service_stub import play_audio, stop_audio
 
 from pydantic import BaseModel
 from datetime import datetime, timezone
@@ -161,19 +160,15 @@ async def websocket_endpoint(websocket: WebSocket):
            print(f"Unexpected error: {e}")
 
 
-@app.post("/play-audio/")
-async def start_playing_audio(audio: AudioRequest):
-    success = play_audio(audio.audio_id, audio.url)
-    if success:
-        return {"status": "Playing audio"}
-    else:
-        return {"error": "Failed to start audio playback"}
-
-
-@app.post("/stop-audio/")
-async def stop_playing_audio():
-    success = stop_audio()
-    if success:
-        return {"status": "Audio stopped"}
-    else:
-        return {"error": "Failed to stop audio playback"}
+@app.get('/play-audio/')
+async def play_audio(filename: str):
+    async with httpx.AsyncClient(timeout=60.0) as client:
+        try:
+            response = await client.get(f'{PLAYER_SERVICE_URL}/play-audio/?filename={filename}')
+            print('response', response)
+            response.raise_for_status()
+        except httpx.HTTPStatusError as e:
+            raise HTTPException(status_code=response.status_code, detail="Failed to play the audio")
+        # except Exception as e:
+        #     raise HTTPException(status_code=500, detail=f"Error in playing the file: {e}")
+    return {"message": "File sent for the playback successfully"}

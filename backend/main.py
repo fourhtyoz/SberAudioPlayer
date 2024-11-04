@@ -1,38 +1,59 @@
+import os
 import redis
-from fastapi import FastAPI, Depends, HTTPException, status, WebSocket, WebSocketDisconnect, WebSocketException, File, UploadFile
-from fastapi.responses import FileResponse
+import asyncio
+import httpx
+
+from fastapi import FastAPI, Depends, HTTPException, status, \
+                    WebSocket, WebSocketDisconnect, \
+                    File, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.security import OAuth2PasswordBearer
+
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
+
 from backend.database import SessionLocal, Base, engine
-from backend.models import Base, User
+from backend.models import User
 from backend.auth import get_password_hash, verify_password, \
-    create_access_token, decode_access_token, ACCESS_TOKEN_EXPIRE_MINUTES
+                         create_access_token, decode_access_token, \
+                         get_current_user
+from backend.player_service_stub import play_audio, stop_audio
+
 from pydantic import BaseModel
-from datetime import datetime, timedelta
+from datetime import datetime, timezone
 from typing import List
-import os
-import shutil
+
 
 redis_client = redis.StrictRedis(host='localhost', port=6379, db=0, decode_responses=True)
-TOKEN_EXPIRATION_MINUTES = 30
 
 app = FastAPI()
-
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000"],
+    allow_origins=["*"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
-# Store connected WebSocket clients
 clients: List[WebSocket] = []
+
 
 UPLOAD_DIR = "uploads"
 os.makedirs(UPLOAD_DIR, exist_ok=True)
+
+CHUNK_SIZE = 1024 * 1024  # 1 MB
+PLAYER_SERVICE_URL = "http://localhost:8001"
+
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
+
+class UserData(BaseModel):
+    username: str
+    password: str
+
+class AudioRequest(BaseModel):
+    audio_id: str
+    url: str
+
 
 async def get_db():
     async with SessionLocal() as session:
@@ -43,16 +64,15 @@ async def startup():
     async with engine.begin() as conn:
         await conn.run_sync(Base.metadata.create_all)
 
-class UserData(BaseModel):
-    username: str
-    password: str
 
+# Routes
 @app.post("/register/")
 async def register(data: UserData, db: AsyncSession = Depends(get_db)):
     user = User(username=data.username, hashed_password=get_password_hash(data.password))
     db.add(user)
     await db.commit()
     return {"message": "User registered successfully"}
+
 
 @app.post("/login/")
 async def login(data: UserData, db: AsyncSession = Depends(get_db)):
@@ -63,27 +83,22 @@ async def login(data: UserData, db: AsyncSession = Depends(get_db)):
     access_token = create_access_token(data={"sub": data.username})
     return {"access_token": access_token, "token_type": "bearer"}
 
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
+
 @app.post('/logout')
 async def logout(token: str = Depends(oauth2_scheme)):
     payload = decode_access_token(token)
     if not payload:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid token")
 
-    # Get the token's expiration and calculate remaining time
     expire = payload.get("exp")
     if not expire:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid token payload")
 
-    remaining_time = expire - int(datetime.utcnow().timestamp())
+    remaining_time = expire - int(datetime.now(timezone.utc).timestamp())
     redis_client.setex(f"blacklist:{token}", remaining_time, "blacklisted")
 
     return {"message": "Successfully logged out"}
 
-# Dependency to check if a token is blacklisted
-# async def is_blacklisted(token: str):
-#     if redis_client.get(f"blacklist:{token}") is not None:
-#         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Token has been revoked")
 
 @app.get("/protected/")
 async def protected_route(token: str = Depends(oauth2_scheme)):
@@ -93,37 +108,76 @@ async def protected_route(token: str = Depends(oauth2_scheme)):
 
     return {"message": "You have access to this protected route"}
 
-@app.websocket("/ws")
-async def websocket_endpoint(websocket: WebSocket):
-    await websocket.accept()  # Accept the WebSocket connection
-    clients.append(websocket)  # Add the client to the list
 
-    print('websocket', websocket)
-    try:
-        while True:
-            data = await websocket.receive_text()
-            print('data', data)  # Receive data from client
-            # Broadcast the received message to all connected clients
-            for client in clients:
-                await client.send_text(f"Message from server: {data}")
-    except WebSocketDisconnect:
-        clients.remove(websocket)  # Remove client if they disconnect
-
-@app.post("/upload-audio")
+@app.post("/upload-audio/")
 async def upload_audio(file: UploadFile = File(...)):
-    file_location = f"{UPLOAD_DIR}/{file.filename}"
+    file_location = os.path.join(UPLOAD_DIR, file.filename)
 
-    with open(file_location, "wb") as buffer:
-        shutil.copyfileobj(file.file, buffer)
+    # Save the file in chunks asynchronously
+    try:
+        with open(file_location, "wb") as f:
+            while chunk := await file.read(CHUNK_SIZE):
+                f.write(chunk)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to save file: {e}")
 
-    return {"filename": file.filename, "message": "File uploaded successfully"}
+    # Forward the file to the player service
+    async with httpx.AsyncClient() as client:
+        with open(file_location, "rb") as f:
+            files = {"file": (file.filename, f, file.content_type or "audio/mpeg")}
+            try:
+                response = await client.post(f'{PLAYER_SERVICE_URL}/add-audio/', files=files)
+                response.raise_for_status()
+            except httpx.HTTPStatusError as e:
+                raise HTTPException(status_code=response.status_code, detail="Failed to send audio to queue")
+            except Exception as e:
+                raise HTTPException(status_code=500, detail=f"Error in forwarding file: {e}")
 
-@app.get("/uploads/{filename}")
-async def get_uploaded_file(filename: str):
-    file_path = os.path.join(UPLOAD_DIR, filename)
-    return FileResponse(path=file_path, media_type='audio/mpeg', filename=filename)
+    return {"message": "File uploaded and forwarded successfully"}
 
-# @app.get("/items/")
-# async def read_items(db: AsyncSession = Depends(get_db)):
-#     items = await crud.get_items(db)
-#     return items
+
+@app.websocket("/ws/queue/")
+async def websocket_endpoint(websocket: WebSocket):
+    await websocket.accept()
+
+    async with httpx.AsyncClient() as client:
+        try:
+            while True:
+                try:
+                    # Asynchronously get the current queue from the player service
+                    response = await client.get(f'{PLAYER_SERVICE_URL}/get_current_queue/')
+                    response.raise_for_status()
+                    data = response.json()
+                except httpx.HTTPStatusError as e:
+                    print(f"HTTP error occurred: {e}")
+                    data = {"error": "Failed to retrieve queue data"}
+                except httpx.RequestError as e:
+                    print(f"Request error: {e}")
+                    data = {"error": "Connection to player service failed"}
+
+                # Send the queue data to the client
+                await websocket.send_json(data)
+
+                await asyncio.sleep(1)
+        except WebSocketDisconnect:
+            print("WebSocket disconnected")
+        except Exception as e:
+           print(f"Unexpected error: {e}")
+
+
+@app.post("/play-audio/")
+async def start_playing_audio(audio: AudioRequest):
+    success = play_audio(audio.audio_id, audio.url)
+    if success:
+        return {"status": "Playing audio"}
+    else:
+        return {"error": "Failed to start audio playback"}
+
+
+@app.post("/stop-audio/")
+async def stop_playing_audio():
+    success = stop_audio()
+    if success:
+        return {"status": "Audio stopped"}
+    else:
+        return {"error": "Failed to stop audio playback"}

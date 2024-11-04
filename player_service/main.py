@@ -1,51 +1,55 @@
-# app/main.py
-import grpc
-from concurrent import futures
-import time
-from fastapi import FastAPI
-from pydub import AudioSegment
-from pydub.playback import play
-import sound_service_pb2
-import sound_service_pb2_grpc
+from fastapi import FastAPI, UploadFile, File, HTTPException
+from fastapi.responses import JSONResponse
+from queue import Queue
+from typing import List, Dict
 
 app = FastAPI()
+audio_queue = Queue()
 
-# Implement the SoundService Servicer
-class SoundService(sound_service_pb2_grpc.SoundServiceServicer):
-    def PlaySound(self, request, context):
-        file_name = request.file_name
-        try:
-            # Load and play the audio file
-            audio = AudioSegment.from_file(file_name)
-            play(audio)
-            return sound_service_pb2.SoundResponse(message="Played successfully", success=True)
-        except Exception as e:
-            return sound_service_pb2.SoundResponse(message=str(e), success=False)
 
-# gRPC Server Setup
-def serve():
-    server = grpc.server(futures.ThreadPoolExecutor(max_workers=10))
-    sound_service_pb2_grpc.add_SoundServiceServicer_to_server(SoundService(), server)
-    server.add_insecure_port("[::]:50051")
-    server.start()
-    print("gRPC server started on port 50051")
-    try:
-        while True:
-            time.sleep(86400)
-    except KeyboardInterrupt:
-        server.stop(0)
+@app.post("/add-audio/")
+async def add_audio_to_queue(file: UploadFile = File(...)):
+    if not file.content_type.startswith("audio/"):
+        raise HTTPException(status_code=400, detail="Invalid file type")
 
-# Run gRPC server in background
-import threading
-threading.Thread(target=serve, daemon=True).start()
+    file_content = await file.read()
+    audio_queue.put({"filename": file.filename, "content": file_content})
 
-# app/main.py (continued)
+    response = {"message": "File added to queue successfully"}
+    return response
 
-import sound_service_pb2_grpc
 
-@app.post("/play-sound/")
-async def play_sound(file_name: str):
-    with grpc.insecure_channel("localhost:50051") as channel:
-        stub = sound_service_pb2_grpc.SoundServiceStub(channel)
-        response = stub.PlaySound(sound_service_pb2.SoundRequest(file_name=file_name))
-        return {"message": response.message, "success": response.success}
+@app.get('/get_current_queue/')
+async def get_queue() -> List[Dict[str, str]]:
+    queue_list = list(audio_queue.queue)
+    response = []
+    for item in queue_list:
+        if item.get('filename'):
+            response.append({'filename': item.get('filename')})
+    return response
+
+
+
+
+# import grpc
+# from concurrent import futures
+# from player_service.proto import player_pb2_grpc, player_pb2
+
+# class PlayerService(player_pb2_grpc.PlayerServiceServicer):
+#     def PlayAudio(self, request, context):
+#         print(f"Playing audio: {request.audio_id} from {request.url}")
+#         return player_pb2.PlayResponse(success=True)
+
+#     def StopAudio(self, request, context):
+#         print("Stopping audio")
+#         return player_pb2.StopResponse(success=True)
+
+# def serve():
+#     server = grpc.server(futures.ThreadPoolExecutor(max_workers=10))
+#     player_pb2_grpc.add_PlayerServiceServicer_to_server(PlayerService(), server)
+#     server.add_insecure_port('[::]:50051')
+#     server.start()
+#     server.wait_for_termination()
+
+# if __name__ == '__main__':
+#     serve()

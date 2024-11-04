@@ -13,9 +13,15 @@ export const AuthProvider = ({ children }) => {
     useEffect(() => {
         const token = localStorage.getItem('token');
         if (token) {
-        const decodedUser = jwtDecode(token); // Decode the JWT
-        setUser(decodedUser);                  // Store decoded user info in state
-        setIsAuthenticated(true);
+            const decodedUser = jwtDecode(token);
+            if (decodedUser?.exp && decodedUser?.exp <= 0) {
+                localStorage.removeItem('token');
+                setUser(null);
+                setIsAuthenticated(false);
+            } else {
+                setUser(decodedUser);
+                setIsAuthenticated(true);
+            }
         }
     }, []);
 

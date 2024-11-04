@@ -9,8 +9,6 @@ export default function Navbar({ user, isAuthenticated, login, logout }) {
     const [password, setPassword] = useState('');
     const [message, setMessage] = useState('');
 
-    console.log(user, isAuthenticated)
-
     const handleRegister = async () => {
         try {
             await register(username, password);

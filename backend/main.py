@@ -1,5 +1,4 @@
 import os
-import redis
 import asyncio
 import httpx
 
@@ -23,8 +22,6 @@ from pydantic import BaseModel
 from datetime import datetime, timezone
 from typing import List
 
-
-redis_client = redis.StrictRedis(host='localhost', port=6379, db=0, decode_responses=True)
 
 app = FastAPI()
 app.add_middleware(
@@ -95,7 +92,6 @@ async def logout(token: str = Depends(oauth2_scheme)):
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid token payload")
 
     remaining_time = expire - int(datetime.now(timezone.utc).timestamp())
-    redis_client.setex(f"blacklist:{token}", remaining_time, "blacklisted")
 
     return {"message": "Successfully logged out"}
 

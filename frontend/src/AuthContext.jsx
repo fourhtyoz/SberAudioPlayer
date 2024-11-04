@@ -9,7 +9,7 @@ export const AuthContext = createContext();
 export const AuthProvider = ({ children }) => {
     const [user, setUser] = useState(null);
     const [isAuthenticated, setIsAuthenticated] = useState(false);
-
+ 
     useEffect(() => {
         const token = localStorage.getItem('token');
         if (token) {
@@ -34,24 +34,14 @@ export const AuthProvider = ({ children }) => {
             setIsAuthenticated(true);
             localStorage.setItem('token', token);
         }
-    return response.data;
+        return response.data;
     };
 
 
-    const logout = async () => {
-        const token = localStorage.getItem('token');
-        if (token) {
-            try {
-                await axios.post(`${API_URL}/logout/`, {}, { headers: { Authorization: `Bearer ${token}` } });
-                localStorage.removeItem('token');
-                setUser(null);
-                setIsAuthenticated(false);
-            } catch (err) {
-                console.log('logout failed: axios failed')
-            }
-        } else {
-            console.log('logout failed: token is null')
-        }
+    const logout = () => {
+        localStorage.removeItem('token');
+        setUser(null);
+        setIsAuthenticated(false);
     };
 
   return (

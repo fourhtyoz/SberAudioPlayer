@@ -80,21 +80,6 @@ async def login(data: UserData, db: AsyncSession = Depends(get_db)):
     return {"access_token": access_token, "token_type": "bearer"}
 
 
-@app.post('/logout')
-async def logout(token: str = Depends(oauth2_scheme)):
-    payload = decode_access_token(token)
-    if not payload:
-        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid token")
-
-    expire = payload.get("exp")
-    if not expire:
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid token payload")
-
-    remaining_time = expire - int(datetime.now(timezone.utc).timestamp())
-
-    return {"message": "Successfully logged out"}
-
-
 @app.get("/protected/")
 async def protected_route(token: str = Depends(oauth2_scheme)):
     token = decode_access_token(token)
@@ -131,6 +116,46 @@ async def upload_audio(file: UploadFile = File(...)):
     return {"message": "File uploaded and forwarded successfully"}
 
 
+@app.post("/delete-audio/")
+async def delete_audio(index: str):
+    async with httpx.AsyncClient() as client:
+        try:
+            response = await client.post(f'{PLAYER_SERVICE_URL}/delete-audio/?index={index}')
+            response.raise_for_status()
+        except httpx.HTTPStatusError as e:
+            raise HTTPException(status_code=response.status_code, detail="Failed to delete a file from the queue")
+        except Exception as e:
+            raise HTTPException(status_code=500, detail=f"Error in forwarding file: {e}")
+
+    return {'message': 'deleted'}
+
+
+@app.get('/play-queue/')
+async def play_queue():
+    async with httpx.AsyncClient(timeout=60.0) as client:
+        try:
+            response = await client.get(f'{PLAYER_SERVICE_URL}/play-queue/')
+            response.raise_for_status()
+        except httpx.HTTPStatusError as e:
+            raise HTTPException(status_code=response.status_code, detail="Failed to play the queue")
+        except Exception as e:
+                raise HTTPException(status_code=500, detail=f"Error in playing the file: {e}")
+    return {"message": "Finished"}
+
+
+# @app.get('/play-audio/')
+# async def play_audio(filename: str):
+#     async with httpx.AsyncClient(timeout=60.0) as client:
+#         try:
+#             response = await client.get(f'{PLAYER_SERVICE_URL}/play-audio/?filename={filename}')
+#             response.raise_for_status()
+#         except httpx.HTTPStatusError as e:
+#             raise HTTPException(status_code=response.status_code, detail="Failed to play the audio")
+#         except Exception as e:
+#                 raise HTTPException(status_code=500, detail=f"Error in playing the file: {e}")
+#     return {"message": "Finished"}
+
+
 @app.websocket("/ws/queue/")
 async def websocket_endpoint(websocket: WebSocket):
     await websocket.accept()
@@ -160,15 +185,4 @@ async def websocket_endpoint(websocket: WebSocket):
            print(f"Unexpected error: {e}")
 
 
-@app.get('/play-audio/')
-async def play_audio(filename: str):
-    async with httpx.AsyncClient(timeout=60.0) as client:
-        try:
-            response = await client.get(f'{PLAYER_SERVICE_URL}/play-audio/?filename={filename}')
-            print('response', response)
-            response.raise_for_status()
-        except httpx.HTTPStatusError as e:
-            raise HTTPException(status_code=response.status_code, detail="Failed to play the audio")
-        # except Exception as e:
-        #     raise HTTPException(status_code=500, detail=f"Error in playing the file: {e}")
-    return {"message": "File sent for the playback successfully"}
+

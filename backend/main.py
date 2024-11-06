@@ -107,6 +107,7 @@ async def upload_audio(file: UploadFile = File(...)):
             files = {"file": (file.filename, f, file.content_type or "audio/mpeg")}
             try:
                 response = await client.post(f'{PLAYER_SERVICE_URL}/add-audio/', files=files)
+                print('response', response)
                 response.raise_for_status()
             except httpx.HTTPStatusError as e:
                 raise HTTPException(status_code=response.status_code, detail="Failed to send audio to queue")
@@ -130,30 +131,30 @@ async def delete_audio(index: str):
     return {'message': 'deleted'}
 
 
-@app.get('/play-queue/')
-async def play_queue():
-    async with httpx.AsyncClient(timeout=60.0) as client:
-        try:
-            response = await client.get(f'{PLAYER_SERVICE_URL}/play-queue/')
-            response.raise_for_status()
-        except httpx.HTTPStatusError as e:
-            raise HTTPException(status_code=response.status_code, detail="Failed to play the queue")
-        except Exception as e:
-                raise HTTPException(status_code=500, detail=f"Error in playing the file: {e}")
-    return {"message": "Finished"}
-
-
-# @app.get('/play-audio/')
-# async def play_audio(filename: str):
+# @app.get('/play-queue/')
+# async def play_queue():
 #     async with httpx.AsyncClient(timeout=60.0) as client:
 #         try:
-#             response = await client.get(f'{PLAYER_SERVICE_URL}/play-audio/?filename={filename}')
+#             response = await client.get(f'{PLAYER_SERVICE_URL}/play-queue/')
 #             response.raise_for_status()
 #         except httpx.HTTPStatusError as e:
-#             raise HTTPException(status_code=response.status_code, detail="Failed to play the audio")
+#             raise HTTPException(status_code=response.status_code, detail="Failed to play the queue")
 #         except Exception as e:
 #                 raise HTTPException(status_code=500, detail=f"Error in playing the file: {e}")
 #     return {"message": "Finished"}
+
+
+@app.get('/play-audio/')
+async def play_audio(filename: str):
+    async with httpx.AsyncClient(timeout=60.0) as client:
+        try:
+            response = await client.get(f'{PLAYER_SERVICE_URL}/play-audio/?filename={filename}')
+            response.raise_for_status()
+        except httpx.HTTPStatusError as e:
+            raise HTTPException(status_code=response.status_code, detail="Failed to play the audio")
+        except Exception as e:
+                raise HTTPException(status_code=500, detail=f"Error in playing the file: {e}")
+    return {"message": "Finished"}
 
 
 @app.websocket("/ws/queue/")

@@ -16,11 +16,6 @@ class SoundExecutionService(audio_pb2_grpc.SoundExecutionServiceServicer):
 
             time.sleep(5)
 
-            # Schedule the asynchronous playback function to run in the background
-            # loop = asyncio.get_event_loop()
-            # loop.run_in_executor(None, self._play_audio_file, filename)
-            
-            # Respond immediately to the client
             return audio_pb2.PlayResponse(success=True, message="Playback started")
         else:
             return audio_pb2.PlayResponse(success=False, message="File not found")

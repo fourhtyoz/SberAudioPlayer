@@ -3,7 +3,7 @@ import axios from "axios";
 import { API_URL } from "../utils/constants";
 
 
-export default function UploadedAudio({ index, filename, disabled }) {
+export default function UploadedAudio({ index, filename, disabled, isPlaying }) {
     const handleDelete = async () => {
         try {
             await axios.post(`${API_URL}/delete-audio/?index=${index}`);
@@ -15,6 +15,7 @@ export default function UploadedAudio({ index, filename, disabled }) {
     return (
         <div>
             #{index+1}: {filename}
+            {isPlaying && 'is playing now'}
             <button onClick={handleDelete} disabled={disabled}>Delete</button>
         </div>
     )

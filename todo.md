@@ -1,14 +1,17 @@
-1. all actions via jwt
-2. display which audio is playing (нужен признак в список аудио (queue))
-3. frontend
-4. redis (?)
-5. refactoring
-6. stop the playback
-7. check the db (if it's working)
-8. REST = OpenAPI / SwaggerUI
-9. docker-compose
-10. Tests
-11. GitHub actions
-12. error handling
-
+1. all actions via jwt [ ]
+2. display which audio is playing (нужен признак в список аудио (queue)) [ ]
+3. frontend [ ]
+4. redis (?) [ ]
+5. refactoring [ ]
+6. stop the playback [ ]
+7. check the db (if it's working) [ ]
+8. REST = OpenAPI / SwaggerUI [ ]
+9. docker-compose [ ]
+10. Tests [ ]
+11. GitHub actions [ ]
+12. error handling [ ]
+13. webpack [ ]
+14. requirements.txt [ ]
+15. typescript [ ]
+16. readme [ ]
 

@@ -1,13 +1,13 @@
 import React, { useState, useEffect } from "react";
 import UploadedAudio from "./UploadedAudio";
-import axios from "axios";
-import { API_URL } from "../utils/constants";
+import { api } from "../utils/api";
+
 
 export default function Queue() {
     const [queue, setQueue] = useState([]);
     const [error, setError] = useState('');
     const [isPlaying, setIsPlaying] = useState(false)
-    
+
     useEffect(() => {
         const ws = new WebSocket("ws://localhost:8000/ws/queue/");
         ws.onmessage = (event) => {
@@ -16,28 +16,32 @@ export default function Queue() {
                 setError(data.error)
                 console.error(data)
             } else {
-                if (!isPlaying) {
-                    setQueue(JSON.parse(event.data));
+                if (queue.length < data.length) {
+                    const excessItems = data.slice(queue.length);
+                    const newQueue = queue.concat(excessItems)
+                    setQueue(newQueue);
+                } else if (queue.length > data.length) {
+                    setQueue(data)
                 }
             }
         }
         ws.onerror = (event) => {
-            console.log(event)
+            console.error(event)
         }
         return () => ws.close();
-    }, [isPlaying]);
+    }, [queue]);
 
       const playAudioQueue = async () => {
         setIsPlaying(true)
         for (let i = 0; i < queue.length; i++) {
           const currentItem = queue[i];
-      
+            
           setQueue(queue.map((item, index) => 
             index === i ? { ...item, is_playing: true } : { filename: item.filename }
           ));
       
           try {
-            await axios.get(`${API_URL}/play-audio/?filename=${currentItem.filename}`);
+            await api.get(`/play-audio/?filename=${currentItem.filename}`);
           } catch (error) {
             console.error("Error playing audio:", error);
           }
@@ -47,7 +51,7 @@ export default function Queue() {
         setIsPlaying(false)
       };
 
-    return (
+      return (
         <div>
             <h2>Queue</h2>
             <div>{error}</div>

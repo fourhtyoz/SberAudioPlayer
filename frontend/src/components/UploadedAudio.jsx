@@ -1,12 +1,11 @@
 import React, { useState } from "react";
-import axios from "axios";
-import { API_URL } from "../utils/constants";
+import { api } from "../utils/api";
 
 
 export default function UploadedAudio({ index, filename, disabled, isPlaying }) {
     const handleDelete = async () => {
         try {
-            await axios.post(`${API_URL}/delete-audio/?index=${index}`);
+            await api.post(`/delete-audio/?index=${index}`);
         } catch (e) {
             console.error(e)
         }

@@ -1,5 +1,5 @@
 import React, { useState, useRef } from 'react';
-import axios from 'axios';
+import { api } from '../utils/api';
 
 
 export default function AudioUpload() {
@@ -25,7 +25,7 @@ export default function AudioUpload() {
         formData.append('file', audioFile);
 
         try {
-            await axios.post('http://localhost:8000/upload-audio/', formData, 
+            await api.post('http://localhost:8000/upload-audio/', formData, 
                 { headers: {'Content-Type': 'multipart/form-data'} }
             );
             

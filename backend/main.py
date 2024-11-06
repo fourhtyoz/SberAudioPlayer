@@ -90,10 +90,13 @@ async def protected_route(token: str = Depends(oauth2_scheme)):
 
 
 @app.post("/upload-audio/")
-async def upload_audio(file: UploadFile = File(...)):
+async def upload_audio(token: str = Depends(oauth2_scheme), file: UploadFile = File(...)):
+    token = decode_access_token(token)
+    if not token:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Token is invalid or expired")
+
     file_location = os.path.join(UPLOAD_DIR, file.filename)
 
-    # Save the file in chunks asynchronously
     try:
         with open(file_location, "wb") as f:
             while chunk := await file.read(CHUNK_SIZE):
@@ -118,7 +121,11 @@ async def upload_audio(file: UploadFile = File(...)):
 
 
 @app.post("/delete-audio/")
-async def delete_audio(index: str):
+async def delete_audio(index: str, token: str = Depends(oauth2_scheme)):
+    token = decode_access_token(token)
+    if not token:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Token is invalid or expired")
+
     async with httpx.AsyncClient() as client:
         try:
             response = await client.post(f'{PLAYER_SERVICE_URL}/delete-audio/?index={index}')
@@ -145,7 +152,11 @@ async def delete_audio(index: str):
 
 
 @app.get('/play-audio/')
-async def play_audio(filename: str):
+async def play_audio(filename: str, token: str = Depends(oauth2_scheme)):
+    token = decode_access_token(token)
+    if not token:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Token is invalid or expired")
+
     async with httpx.AsyncClient(timeout=60.0) as client:
         try:
             response = await client.get(f'{PLAYER_SERVICE_URL}/play-audio/?filename={filename}')
@@ -184,6 +195,3 @@ async def websocket_endpoint(websocket: WebSocket):
             print("WebSocket disconnected")
         except Exception as e:
            print(f"Unexpected error: {e}")
-
-
-

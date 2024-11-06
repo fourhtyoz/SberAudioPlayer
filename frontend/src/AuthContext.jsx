@@ -1,11 +1,10 @@
 // src/AuthContext.js
 import React, { createContext, useState, useEffect } from 'react';
-import { jwtDecode } from 'jwt-decode'; // To decode JWT
-import axios from 'axios';
-import { API_URL } from './utils/constants';
+import { jwtDecode } from 'jwt-decode';
+import { api } from './utils/api';
+
 
 export const AuthContext = createContext();
-
 export const AuthProvider = ({ children }) => {
     const [user, setUser] = useState(null);
     const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -26,7 +25,7 @@ export const AuthProvider = ({ children }) => {
     }, []);
 
     const login = async (username, password) => {
-        const response = await axios.post(`${API_URL}/login/`, { username, password });
+        const response = await api.post(`/login/`, { username, password });
         const token = response.data.access_token
         if (token) {
             const decodedUser = jwtDecode(token);

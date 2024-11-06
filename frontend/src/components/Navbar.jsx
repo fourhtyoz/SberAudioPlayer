@@ -1,7 +1,7 @@
 // frontend/src/App.js
 import React, { useState } from 'react';
 import { register, getToken } from '../utils/api';
-import axios from 'axios';
+import { api } from '../utils/api';
 
 
 export default function Navbar({ user, isAuthenticated, login, logout }) {
@@ -27,17 +27,17 @@ export default function Navbar({ user, isAuthenticated, login, logout }) {
         }
     };
 
-    const handleProtectedRequest = async () => {
-        try {
-            const token = getToken();
-            const response = await axios.get('http://localhost:8000/protected/', {
-                headers: { Authorization: `Bearer ${token}` },
-            });
-            setMessage(response.data.message);
-        } catch (error) {
-            setMessage('Access denied.');
-        }
-    };
+    // const handleProtectedRequest = async () => {
+    //     try {
+    //         const token = getToken();
+    //         const response = await api.get('http://localhost:8000/protected/', {
+    //             headers: { Authorization: `Bearer ${token}` },
+    //         });
+    //         setMessage(response.data.message);
+    //     } catch (error) {
+    //         setMessage('Access denied.');
+    //     }
+    // };
 
     const handleLogout = async () => {
         try {
@@ -61,7 +61,7 @@ export default function Navbar({ user, isAuthenticated, login, logout }) {
             {!isAuthenticated && <button onClick={handleRegister}>Register</button>}
             {!isAuthenticated &&<button onClick={handleLogin}>Login</button>}
             {isAuthenticated && <button onClick={handleLogout}>Logout</button>}
-            {isAuthenticated && <button onClick={handleProtectedRequest}>Access Protected Route</button>}
+            {/* {isAuthenticated && <button onClick={handleProtectedRequest}>Access Protected Route</button>} */}
 
             <p>{message}</p>
         </div>

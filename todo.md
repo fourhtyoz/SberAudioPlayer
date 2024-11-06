@@ -1,5 +1,5 @@
 1. all actions via jwt [ ]
-2. display which audio is playing (нужен признак в список аудио (queue)) [ ]
+2. display which audio is playing (нужен признак в список аудио (queue)) [x]
 3. frontend [ ]
 4. redis (?) [ ]
 5. refactoring [ ]

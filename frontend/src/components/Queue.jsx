@@ -32,12 +32,12 @@ export default function Queue() {
             alertify.error(`Ошибка подключения в WebSocket: ${event}`)
         }
         return () => {
-            alertify.success(`WebSocket отключен`)
             ws.close();
         }
     }, [queue]);
 
       const playAudioQueue = async () => {
+        alertify.success(`Начало проигрывания очереди`)
         setIsPlaying(true)
         for (let i = 0; i < queue.length; i++) {
           const currentItem = queue[i];
@@ -55,6 +55,7 @@ export default function Queue() {
         }
         setQueue(queue.map(item => ({ filename: item.filename })));
         setIsPlaying(false)
+        alertify.success(`Конец проигрывания очереди`)
       };
 
       return (

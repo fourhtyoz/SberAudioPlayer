@@ -1,50 +1,42 @@
 // frontend/src/App.js
 import React, { useState } from 'react';
-import { register, getToken } from '../utils/api';
-import { api } from '../utils/api';
+import { register } from '../utils/api';
+import alertify from 'alertifyjs';
+import 'alertifyjs/build/css/alertify.css';
 
 
 export default function Navbar({ user, isAuthenticated, login, logout }) {
     const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
-    const [message, setMessage] = useState('');
+    // const [message, setMessage] = useState('');
 
     const handleRegister = async () => {
         try {
             await register(username, password);
-            setMessage('Registered successfully. You can now log in.');
+            alertify.success('Регистрация прошла успешно')
         } catch (error) {
-            setMessage('Registration failed.');
+            console.log(error)
+            alertify.error(`Ошибка при регистрации: ${error?.response?.data?.detail}`)
         }
     };
 
     const handleLogin = async () => {
         try {
             await login(username, password);
-            setMessage('Logged in successfully.');
+            alertify.success('Вы вошли в свой аккаунт')
         } catch (error) {
-            setMessage('Login failed.');
+            console.log(error)
+            alertify.error(`Ошибка при входе в аккаунт: ${error?.response?.data?.detail}`)
         }
     };
-
-    // const handleProtectedRequest = async () => {
-    //     try {
-    //         const token = getToken();
-    //         const response = await api.get('http://localhost:8000/protected/', {
-    //             headers: { Authorization: `Bearer ${token}` },
-    //         });
-    //         setMessage(response.data.message);
-    //     } catch (error) {
-    //         setMessage('Access denied.');
-    //     }
-    // };
 
     const handleLogout = async () => {
         try {
             await logout();
-            setMessage('Logged out successfully.');
+            alertify.success('Вы вышли из своего аккаунта')
         } catch (error) {
-            setMessage('Logout failed.');
+            console.log(error)
+            alertify.error(`Ошибка при выходе из аккаунта: ${error?.response?.data?.detail}`)
         }
     }
 
@@ -63,7 +55,7 @@ export default function Navbar({ user, isAuthenticated, login, logout }) {
             {isAuthenticated && <button onClick={handleLogout}>Logout</button>}
             {/* {isAuthenticated && <button onClick={handleProtectedRequest}>Access Protected Route</button>} */}
 
-            <p>{message}</p>
+            {/* <p>{message}</p> */}
         </div>
     );
 }

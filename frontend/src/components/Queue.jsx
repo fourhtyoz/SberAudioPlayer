@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from "react";
 import UploadedAudio from "./UploadedAudio";
 import { api } from "../utils/api";
+import alertify from 'alertifyjs';
+import 'alertifyjs/build/css/alertify.css';
 
 
 export default function Queue() {
@@ -14,7 +16,7 @@ export default function Queue() {
             const data = JSON.parse(event.data)
             if (data?.error) {
                 setError(data.error)
-                console.error(data)
+                alertify.error(`Ошибка получения данных через WebSocket: ${data.error}`)
             } else {
                 if (queue.length < data.length) {
                     const excessItems = data.slice(queue.length);
@@ -27,8 +29,12 @@ export default function Queue() {
         }
         ws.onerror = (event) => {
             console.error(event)
+            alertify.error(`Ошибка подключения в WebSocket: ${event}`)
         }
-        return () => ws.close();
+        return () => {
+            alertify.success(`WebSocket отключен`)
+            ws.close();
+        }
     }, [queue]);
 
       const playAudioQueue = async () => {
@@ -44,9 +50,9 @@ export default function Queue() {
             await api.get(`/play-audio/?filename=${currentItem.filename}`);
           } catch (error) {
             console.error("Error playing audio:", error);
+            alertify.error(`Ошибка воспроизведения ${currentItem.filename}: ${error?.response?.data?.detail}`)
           }
         }
-      
         setQueue(queue.map(item => ({ filename: item.filename })));
         setIsPlaying(false)
       };

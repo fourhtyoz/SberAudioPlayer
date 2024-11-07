@@ -1,10 +1,11 @@
 import React, { useState, useRef } from 'react';
 import { api } from '../utils/api';
+import alertify from 'alertifyjs';
+import 'alertifyjs/build/css/alertify.css';
 
 
 export default function AudioUpload() {
     const [audioFile, setAudioFile] = useState(null);
-    const [uploadStatus, setUploadStatus] = useState('');
     const fileInputRef = useRef(null);
 
     const handleFileChange = (event) => {
@@ -14,10 +15,9 @@ export default function AudioUpload() {
 
     const handleUpload = async (event) => {
         event.preventDefault();
-        console.log(event.target.input)
 
         if (!audioFile) {
-            alert("Please select an audio file first.");
+            alertify.alert('Ошибка при загрузке файла', 'Сначала необходимо выбрать файл')
             return;
         }
 
@@ -25,17 +25,20 @@ export default function AudioUpload() {
         formData.append('file', audioFile);
 
         try {
-            await api.post('http://localhost:8000/upload-audio/', formData, 
+            const res = await api.post('http://localhost:8000/upload-audio/', formData, 
                 { headers: {'Content-Type': 'multipart/form-data'} }
             );
-            
-            setUploadStatus('File uploaded successfully!');
-            setAudioFile(null);
-            fileInputRef.current.value = '';
-            // setUploadedAudioUrl(`http://localhost:8000/uploads/${response.data.filename}`);
+            if (res.status === 200) {
+                alertify.success('Файл успешно загружен')
+                setAudioFile(null);
+                fileInputRef.current.value = '';
+            } else {
+                console.error("Failed to upload file:", res);
+                alertify.error(`Ошибка при загрузке файла. Код ошибки: ${res.status}`)
+            }
         } catch (error) {
             console.error("Failed to upload file:", error);
-            setUploadStatus("File upload failed.");
+            alertify.error(`Ошибка при загрузке файла: ${error?.response?.data?.detail}`)
         }
     };
 
@@ -44,9 +47,8 @@ export default function AudioUpload() {
             <h2>Upload a new sound:</h2>
             <form onSubmit={handleUpload}>
                 <input ref={fileInputRef} type="file" accept="audio/*" onChange={handleFileChange} />
-                <button type="submit">Upload</button>
+                <button type="submit" disabled={!audioFile} >Upload</button>
             </form>
-            {uploadStatus && <p>{uploadStatus}</p>}
         </div>
     );
 };

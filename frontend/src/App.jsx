@@ -1,22 +1,23 @@
 import React from 'react';
-import Navbar from './components/Navbar';
 import Header from './components/Header';
 import Footer from './components/Footer';
 import Main from './components/Main';
-import { useContext } from 'react';
-import { AuthContext } from './AuthContext';
+import styled from 'styled-components';
 
+
+const SWrapper = styled.div`
+    display: flex;
+    flex-direction: column;
+    height: 100vh; /* Full viewport height */
+`
 
 export default function App() {
-    const { user, isAuthenticated, login, logout } = useContext(AuthContext)
-
     return (
-        <div>
+        <SWrapper>
             <Header />
-            <Navbar user={user} isAuthenticated={isAuthenticated} login={login} logout={logout} />
-            <Main isAuthenticated={isAuthenticated}/>
+            <Main />
             <Footer />
-        </div>
+        </SWrapper>
   );
 }
 

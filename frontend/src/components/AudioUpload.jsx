@@ -2,6 +2,15 @@ import React, { useState, useRef } from 'react';
 import { api } from '../utils/api';
 import alertify from 'alertifyjs';
 import 'alertifyjs/build/css/alertify.css';
+import styled from 'styled-components';
+
+
+const SWrapper = styled.div`
+`
+
+const STitle = styled.div`
+
+`
 
 
 export default function AudioUpload() {
@@ -11,7 +20,6 @@ export default function AudioUpload() {
     const handleFileChange = (event) => {
         setAudioFile(event.target.files[0]);
     };
-
 
     const handleUpload = async (event) => {
         event.preventDefault();
@@ -43,12 +51,12 @@ export default function AudioUpload() {
     };
 
     return (
-        <div>
-            <h2>Upload a new sound:</h2>
+        <SWrapper>
+            <STitle>Upload a new sound:</STitle>
             <form onSubmit={handleUpload}>
                 <input ref={fileInputRef} type="file" accept="audio/*" onChange={handleFileChange} />
                 <button type="submit" disabled={!audioFile} >Upload</button>
             </form>
-        </div>
+        </SWrapper>
     );
 };

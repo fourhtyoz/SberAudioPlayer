@@ -3,6 +3,46 @@ import UploadedAudio from "./UploadedAudio";
 import { api } from "../utils/api";
 import alertify from 'alertifyjs';
 import 'alertifyjs/build/css/alertify.css';
+import styled from "styled-components";
+
+
+const SPlayButton = styled.button`
+    margin-top: 10px;
+    padding: 10px 20px;
+    font-size: 16px;
+    color: #fff;
+    background-color: #000;
+    border: none;
+    cursor: pointer;
+    transition: background-color 0.3s ease, transform 0.2s ease;
+    border: 1px solid #000;
+    display: block;
+    width: 100%;
+
+    &:hover {
+        border: 1px solid #cecece;
+        color: #000;
+        background-color: #FFF;
+    }
+
+    &:active {
+        transform: scale(0.98);
+    }
+
+    &:disabled {
+        background-color: #ccc;
+        cursor: not-allowed;
+    }
+`
+
+const SError = styled.div`
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    color: red;
+    margin-bottom: 20px;
+    font-weight: bold;
+`
 
 
 export default function Queue() {
@@ -60,10 +100,9 @@ export default function Queue() {
 
       return (
         <div>
-            <h2>Queue</h2>
-            <div>{error}</div>
+            {error && <SError>ewfewfewf {error}</SError>}
             {queue.map((item, index) => <UploadedAudio key={index} index={index} filename={item.filename} disabled={isPlaying} isPlaying={item.is_playing}/>)}
-            {queue.length > 0 && <button onClick={playAudioQueue} disabled={isPlaying}>Play</button>}
+            {queue.length > 0 && <SPlayButton onClick={playAudioQueue} disabled={isPlaying}>Воспроизвести очередь</SPlayButton>}
         </div>
     );
 }

@@ -8,7 +8,6 @@ import styled from 'styled-components';
 const SWrapper = styled.div`
     display: flex;
     flex-direction: column;
-    height: 100vh; /* Full viewport height */
 `
 
 export default function App() {
@@ -16,7 +15,7 @@ export default function App() {
         <SWrapper>
             <Header />
             <Main />
-            <Footer />
+            {/* <Footer /> */}
         </SWrapper>
   );
 }

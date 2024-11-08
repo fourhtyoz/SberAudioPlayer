@@ -13,7 +13,7 @@ export const AuthProvider = ({ children }) => {
         const token = localStorage.getItem('token');
         if (token) {
             const decodedUser = jwtDecode(token);
-            if (decodedUser?.exp && decodedUser?.exp <= 0) {
+            if (decodedUser?.exp && decodedUser.exp <= 0) {
                 localStorage.removeItem('token');
                 setUser(null);
                 setIsAuthenticated(false);

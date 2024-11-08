@@ -8,9 +8,6 @@ import { useContext } from 'react';
 import { AuthContext } from '../AuthContext';
 
 
-const SWrapper = styled.div`
-`
-
 const SRow = styled.div`
     display: flex;
 `
@@ -105,7 +102,7 @@ export default function Navbar() {
     }
 
     return (
-        <SWrapper>
+        <nav>
             {!isAuthenticated &&
                 <>
                     <SRow>
@@ -118,12 +115,6 @@ export default function Navbar() {
                         <SButton onClick={handleRegister}>Регистрация</SButton>
                 </>
             }
-            {isAuthenticated &&
-            <>
-            Текущий аккаунт: {user.sub}
-            <SButton onClick={handleLogout}>Выйти</SButton>
-            </>
-            }
-        </SWrapper>
+        </nav>
     );
 }

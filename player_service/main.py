@@ -39,27 +39,6 @@ async def play_audio(index: str):
     return response
 
 
-# @app.get('/play-queue/')
-# async def play_audio():
-#     async with grpc.aio.insecure_channel(SOUND_EXECUTION_SERVICE_ADDRESS) as channel:
-#         stub = audio_pb2_grpc.SoundExecutionServiceStub(channel)
-#         queue_list = list(audio_queue.queue)
-#         for item in queue_list:
-#             filename = item.get('filename')
-#             if not filename:
-#                 raise HTTPException(status_code=500, detail=f"filename not found")
-#             request = audio_pb2.AudioRequest(filename=filename)
-#             try:
-#                 response = await stub.PlayAudio(request)
-#                 print('response', response)
-#                 if response.success:
-#                     print(f"Successfully started playback: {filename}")
-#                 else:
-#                     print(f"Failed to play audio: {response.message}")
-#             except grpc.RpcError as e:
-#                 raise HTTPException(status_code=500, detail=f"gRPC error: {e}")
-
-
 @app.get('/get_current_queue/')
 async def get_queue():
     queue_list = list(audio_queue.queue)

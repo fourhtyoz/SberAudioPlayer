@@ -5,7 +5,9 @@ import time
 import os
 import asyncio
 
+
 AUDIO_FILES_DIR = '/Users/nicklesydney/Desktop/Coding/Python/Projects/SberRobotics/backend/uploads/'
+
 
 class SoundExecutionService(audio_pb2_grpc.SoundExecutionServiceServicer):
     def PlayAudio(self, request, context):
@@ -23,28 +25,9 @@ class SoundExecutionService(audio_pb2_grpc.SoundExecutionServiceServicer):
     def _play_audio_file(self, filename):
         """Simulate audio playback asynchronously."""
         print(f"Playing {filename} asynchronously...")
-        asyncio.run(asyncio.sleep(5))  # Simulate playback duration
+        asyncio.run(asyncio.sleep(5))  # Имитация воспроизведения
         print(f"Playback finished for {filename}")
 
-# class SoundExecutionService(audio_pb2_grpc.SoundExecutionServiceServicer):
-    
-#     async def _play_audio_file(self, filename):
-#         """Simulate audio playback asynchronously."""
-#         print(f"Playing {filename} asynchronously...")
-#         await asyncio.sleep(5)  # Simulate playback duration
-#         print(f"Playback finished for {filename}")
-
-#     async def PlayAudio(self, request, context):
-#         filename = request.filename
-#         if os.path.exists(f'/Users/nicklesydney/Desktop/Coding/Python/Projects/SberRobotics/backend/uploads/{filename}'):
-#             print(f"Starting playback for audio file: {filename}")
-#             response = audio_pb2.PlayResponse(success=True, message="Playback started")
-            
-#             asyncio.create_task(self._play_audio_file(filename))
-#             return response  # Send response immediately
-#             # return audio_pb2.PlayResponse(success=True, message="Playback finished")
-#         else:
-#             return audio_pb2.PlayResponse(success=False, message="File not found")
 
 def serve():
     server = grpc.server(futures.ThreadPoolExecutor(max_workers=10))

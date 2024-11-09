@@ -11,47 +11,28 @@ from fastapi.security import OAuth2PasswordBearer
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
 
-from backend.database import SessionLocal, Base, engine
-from backend.models import User
+from backend.database import Base, engine, get_db
+from backend.models import User, UserData
 from backend.auth import get_password_hash, verify_password, \
                          create_access_token, decode_access_token
-
-from pydantic import BaseModel
-from typing import List
 
 
 app = FastAPI()
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=["http://localhost:3000"], # React
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
-clients: List[WebSocket] = []
-
-
+# Constants
+OAUTH2_SCHEME = OAuth2PasswordBearer(tokenUrl="token")
+PLAYER_SERVICE_URL = "http://localhost:8001"
+CHUNK_SIZE = 1024 * 1024  # 1 MB
 UPLOAD_DIR = "uploads"
 os.makedirs(UPLOAD_DIR, exist_ok=True)
 
-CHUNK_SIZE = 1024 * 1024  # 1 MB
-PLAYER_SERVICE_URL = "http://localhost:8001"
-
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
-
-class UserData(BaseModel):
-    username: str
-    password: str
-
-class AudioRequest(BaseModel):
-    audio_id: str
-    url: str
-
-
-async def get_db():
-    async with SessionLocal() as session:
-        yield session
 
 @app.on_event("startup")
 async def startup():
@@ -80,7 +61,7 @@ async def login(data: UserData, db: AsyncSession = Depends(get_db)):
 
 
 @app.post("/upload-audio/")
-async def upload_audio(token: str = Depends(oauth2_scheme), file: UploadFile = File(...)):
+async def upload_audio(token: str = Depends(OAUTH2_SCHEME), file: UploadFile = File(...)):
     user = decode_access_token(token)
     if not user:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Неверный или просроченный токен")
@@ -112,7 +93,7 @@ async def upload_audio(token: str = Depends(oauth2_scheme), file: UploadFile = F
 
 
 @app.post("/delete-audio/")
-async def delete_audio(index: str, token: str = Depends(oauth2_scheme)):
+async def delete_audio(index: str, token: str = Depends(OAUTH2_SCHEME)):
     token = decode_access_token(token)
     if not token:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Неверный или просроченный токен")
@@ -129,21 +110,8 @@ async def delete_audio(index: str, token: str = Depends(oauth2_scheme)):
     return {'message': 'Файл был успешно удален'}
 
 
-# @app.get('/play-queue/')
-# async def play_queue():
-#     async with httpx.AsyncClient(timeout=60.0) as client:
-#         try:
-#             response = await client.get(f'{PLAYER_SERVICE_URL}/play-queue/')
-#             response.raise_for_status()
-#         except httpx.HTTPStatusError as e:
-#             raise HTTPException(status_code=response.status_code, detail="Failed to play the queue")
-#         except Exception as e:
-#                 raise HTTPException(status_code=500, detail=f"Error in playing the file: {e}")
-#     return {"message": "Finished"}
-
-
 @app.get('/play-audio/')
-async def play_audio(filename: str, token: str = Depends(oauth2_scheme)):
+async def play_audio(filename: str, token: str = Depends(OAUTH2_SCHEME)):
     token = decode_access_token(token)
     if not token:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Неверный или просроченный токен")

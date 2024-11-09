@@ -2,8 +2,6 @@
 from datetime import datetime, timedelta
 from jose import JWTError, jwt
 from passlib.context import CryptContext
-from typing import Optional
-from fastapi import HTTPException, status
 
 
 SECRET_KEY = "sberrobotics"
@@ -33,15 +31,3 @@ def decode_access_token(token: str):
         return payload
     except JWTError:
         return None
-    
-
-def get_current_user(token: str) -> Optional[dict]:
-    try:
-        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
-        user = payload.get("username")
-        if user is None:
-            raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Пользователь не найден")
-        return {"username": user}
-    except JWTError:
-        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Неправильный токен")
-

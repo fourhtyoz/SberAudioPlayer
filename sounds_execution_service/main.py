@@ -5,7 +5,7 @@ import time
 import os
 
 
-AUDIO_FILES_DIR = '/Users/nicklesydney/Desktop/Coding/Python/Projects/SberRobotics/backend/uploads/'
+AUDIO_FILES_DIR = '/tmp/uploads/'
 
 
 class SoundExecutionService(audio_pb2_grpc.SoundExecutionServiceServicer):

@@ -23,7 +23,7 @@ from contextlib import asynccontextmanager
 OAUTH2_SCHEME = OAuth2PasswordBearer(tokenUrl="token")
 PLAYER_SERVICE_URL = "http://localhost:8001"
 CHUNK_SIZE = 1024 * 1024  # 1 MB
-UPLOAD_DIR = "uploads"
+UPLOAD_DIR = "/tmp/uploads"
 os.makedirs(UPLOAD_DIR, exist_ok=True)
 
 

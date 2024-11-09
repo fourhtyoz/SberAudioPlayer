@@ -96,7 +96,7 @@ export default function Login() {
                         <StyledInput type="text" placeholder="Имя" value={username} onChange={(e) => setUsername(e.target.value)} />
                     </SRow>
                     <SRow>
-                        <StyledInput type="password" placeholder="Пароль" value={password} onChange={(e) => setPassword(e.target.value)} />
+                        <StyledInput type="password" placeholder="Пароль (минимум 6 символов)" value={password} onChange={(e) => setPassword(e.target.value)} />
                     </SRow>
                         <SButton onClick={handleLogin}>Вход</SButton>
                         <SButton onClick={handleRegister}>Регистрация</SButton>

@@ -77,7 +77,7 @@ export default function Queue() {
     }, [queue]);
 
       const playAudioQueue = async () => {
-        alertify.success(`Начало проигрывания очереди`)
+        alertify.success(`Начало воспроизведения очереди`)
         setIsPlaying(true)
         for (let i = 0; i < queue.length; i++) {
             const currentItem = queue[i];

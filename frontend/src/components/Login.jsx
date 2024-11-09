@@ -71,6 +71,7 @@ export default function Login() {
         try {
             await register(username, password);
             alertify.success('Регистрация прошла успешно')
+            await handleLogin()
         } catch (error) {
             console.log(error)
             alertify.error(`Ошибка при регистрации: ${error?.response?.data?.detail}`)

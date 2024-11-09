@@ -8,8 +8,9 @@ from fastapi import FastAPI, Depends, HTTPException, status, \
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.security import OAuth2PasswordBearer
 
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy.future import select
+from sqlalchemy import select
 
 from backend.database import Base, engine, get_db
 from backend.models import User, UserData
@@ -43,10 +44,32 @@ async def startup():
 # Routes
 @app.post("/register/")
 async def register(data: UserData, db: AsyncSession = Depends(get_db)):
+    # Проверка БД на наличие юзера
+    existing_user = await db.execute(select(User).where(User.username == data.username))
+    if existing_user.scalar() is not None:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Пользователь с таким именем уже существует"
+        )
+
+    # Создание нового юзера
+    if len(data.password) < 6:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Пароль должен быть минимум 6 символов"
+        )
     user = User(username=data.username, hashed_password=get_password_hash(data.password))
     db.add(user)
-    await db.commit()
-    return {"message": "User registered successfully"}
+    try:
+        await db.commit()
+    except IntegrityError as e:
+        await db.rollback()
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"Произошла ошибка при создании юзера: {e}"
+        )
+
+    return {"message": "Успешная регистрация"}
 
 
 @app.post("/login/")

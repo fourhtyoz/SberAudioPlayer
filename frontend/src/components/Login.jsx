@@ -15,37 +15,34 @@ const SRow = styled.div`
 const SButton = styled.button`
     margin-top: 10px;
     padding: 10px 20px;
-    font-size: 16px;
     font-weight: bold;
     color: #fff;
     background-color: #000;
     border: none;
-    width: 150px;
     width: 300px;
     cursor: pointer;
     transition: background-color 0.3s ease, transform 0.2s ease;
     border: 1px solid #000;
     display: block;
 
-    &:hover {
-    border: 1px solid #cecece;
-    color: #000;
-    background-color: #FFF;
+        &:hover {
+        border: 1px solid #cecece;
+        color: #000;
+        background-color: #FFF;
     }
 
     &:active {
-    transform: scale(0.98);
+        transform: scale(0.98);
     }
 
     &:disabled {
-    background-color: #ccc;
-    cursor: not-allowed;
+        background-color: #ccc;
+        cursor: not-allowed;
     }
 `;
 
 const StyledInput = styled.input`
     padding: 10px;
-    font-size: 16px;
     border: 1px solid #ccc;
     outline: none;
     width: 300px;
@@ -54,22 +51,21 @@ const StyledInput = styled.input`
     margin-top: 10px;
 
     &:focus {
-    border-color: #007bff;
-    box-shadow: 0 0 5px rgba(0, 123, 255, 0.5);
+        border-color: #007bff;
+        box-shadow: 0 0 5px rgba(0, 123, 255, 0.5);
     }
 
     &::placeholder {
-    color: #aaa;
+        color: #aaa;
     }
 `;
 
 
-export default function Navbar() {
+export default function Login() {
     const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
 
-    const { user, isAuthenticated, login, logout } = useContext(AuthContext)
-
+    const { isAuthenticated, login } = useContext(AuthContext)
 
     const handleRegister = async () => {
         try {
@@ -90,16 +86,6 @@ export default function Navbar() {
             alertify.error(`Ошибка при входе в аккаунт: ${error?.response?.data?.detail}`)
         }
     };
-
-    const handleLogout = async () => {
-        try {
-            await logout();
-            alertify.success('Вы вышли из своего аккаунта')
-        } catch (error) {
-            console.log(error)
-            alertify.error(`Ошибка при выходе из аккаунта: ${error?.response?.data?.detail}`)
-        }
-    }
 
     return (
         <nav>

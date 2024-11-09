@@ -1,10 +1,10 @@
 import React from 'react';
-import UploadAudio from './UploadAudio';
 import Queue from './Queue';
 import styled from 'styled-components';
 import { useContext } from 'react';
 import { AuthContext } from '../AuthContext';
-import Navbar from './Navbar';
+import Login from './Login';
+import AudioDropzone from './AudioDropzone';
 
 
 const SMain = styled.main`
@@ -13,8 +13,7 @@ const SMain = styled.main`
     flex-direction: column;
     justify-content: center;
     align-items: center;
-    // width: 500px;
-    // margin: 0 auto;
+    margin-bottom: 50px;
 `
 
 const SText = styled.div`
@@ -33,13 +32,13 @@ export default function Main() {
         return (
             <SMain>
                 <SText>Чтобы воспользоваться сервисом, необходимо войти или зарегистрироваться</SText>
-                <Navbar />
+                <Login />
             </SMain>
         ) 
     } else {
         return (
             <SMain>
-                <UploadAudio />
+                <AudioDropzone />
                 <Queue />
             </SMain>
         );

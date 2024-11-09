@@ -1,6 +1,6 @@
 import grpc
 from queue import Queue
-from fastapi import FastAPI, UploadFile, File, HTTPException
+from fastapi import FastAPI, UploadFile, File, HTTPException, Form
 from player_service import audio_pb2, audio_pb2_grpc
 
 
@@ -10,12 +10,12 @@ SOUND_EXECUTION_SERVICE_ADDRESS = "localhost:50051"
 
 
 @app.post("/add-audio/")
-async def add_audio_to_queue(file: UploadFile = File(...)):
+async def add_audio_to_queue(user: str = Form(...), file: UploadFile = File(...)):
     if not file.content_type.startswith("audio/"):
         raise HTTPException(status_code=400, detail="Invalid file type")
 
     file_content = await file.read()
-    audio_queue.put({'filename': file.filename, 'content': file_content})
+    audio_queue.put({'filename': file.filename, 'content': file_content, 'user': user})
 
     response = {"message": "File added to queue successfully"}
     return response
@@ -66,7 +66,7 @@ async def get_queue():
     response = []
     for item in queue_list:
         if item.get('filename'):
-            response.append({'filename': item.get('filename')})
+            response.append({'filename': item.get('filename'), 'user':  item.get('user')})
     return response
 
 

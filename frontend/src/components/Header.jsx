@@ -32,7 +32,6 @@ const SButton = styled.button`
     width: 100%;
     margin-top: 10px;
     padding: 10px 20px;
-    font-size: 16px;
     font-weight: bold;
     color: #fff;
     background-color: #000;
@@ -43,24 +42,24 @@ const SButton = styled.button`
     display: block;
 
     &:hover {
-    border: 1px solid #cecece;
-    color: #000;
-    background-color: #FFF;
+        border: 1px solid #cecece;
+        color: #000;
+        background-color: #FFF;
     }
 
     &:active {
-    transform: scale(0.98);
+        transform: scale(0.98);
     }
 
     &:disabled {
-    background-color: #ccc;
-    cursor: not-allowed;
+        background-color: #ccc;
+        cursor: not-allowed;
     }
 `
 
 export default function Header() {
+    const { user, logout } = useContext(AuthContext)
     const isMobile = useIsMobile();
-    const { user, isAuthenticated, logout } = useContext(AuthContext)
 
     const handleLogout = async () => {
         try {
@@ -75,9 +74,9 @@ export default function Header() {
     return (
         <SHeader isMobile={isMobile}>
             <STitle>Тестовое задание в Robotics Center</STitle>
-            {user?.sub && 
+            {user?.username && 
             <div>
-                <SUserInfo>{`Добро пожаловать, ${user.sub}`}</SUserInfo>
+                <SUserInfo>{`Добро пожаловать, ${user.username}`}</SUserInfo>
                 <SButton onClick={handleLogout}>Выйти</SButton>
             </div>}
         </SHeader>

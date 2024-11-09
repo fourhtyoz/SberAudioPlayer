@@ -3,6 +3,7 @@ import { api } from "../utils/api";
 import alertify from 'alertifyjs';
 import 'alertifyjs/build/css/alertify.css';
 import styled from "styled-components";
+import AudioAnimation from "./PlayingAnimation";
 
 
 const SAudioWrapper = styled.div`
@@ -15,16 +16,19 @@ const SIndex = styled.h3`
     align-items: center;
     text-align: center;
     margin-right: 10px;
+    width: 40px;
 `
 
 const SAudioCard = styled.div`
     border: 1px solid #cccccc;
     padding: 25px;
-    // width: 500px;
     background: #eaeaea;
     margin-bottom: 10px;
     display: flex;
     justify-content: space-between;
+    border-right: none;
+    width: 335px;
+    overflow: hidden;
 `
 
 const SDeleteButton = styled.button`
@@ -44,13 +48,11 @@ const SDeleteButton = styled.button`
         background-color: #FFF;
     }
 
-    &:active {
-        transform: scale(0.98);
-    }
-
     &:disabled {
         background-color: #ccc;
         cursor: not-allowed;
+        border: 1px solid #cecece;
+        color: white;
     }
 `
 
@@ -60,7 +62,7 @@ const SCardText = styled.span`
 
 
 
-export default function UploadedAudio({ index, filename, author, disabled, isPlaying }) {
+export default function UploadedAudio({ index, filename, user, disabled, isPlaying }) {
     const handleDelete = async () => {
         try {
             const res = await api.post(`/delete-audio/?index=${index}`);
@@ -78,11 +80,14 @@ export default function UploadedAudio({ index, filename, author, disabled, isPla
 
     return (
         <SAudioWrapper>
-            <SIndex>#{index+1}:</SIndex>
+            {isPlaying 
+            ? <AudioAnimation/>
+            : <SIndex>#{index+1}:</SIndex>
+            }
+            
             <SAudioCard>
                 <SCardText>Название: {filename}</SCardText>
-                <SCardText>Загрузил: {author}</SCardText>
-                <SCardText>Статус: {isPlaying ? 'воспроизводится' : 'не играет'}</SCardText>
+                <SCardText>Загрузил: {user}</SCardText>
             </SAudioCard>
             <SDeleteButton onClick={handleDelete} disabled={disabled}>Удалить</SDeleteButton>
         </SAudioWrapper>

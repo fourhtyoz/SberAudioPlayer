@@ -14,11 +14,9 @@ from sqlalchemy.future import select
 from backend.database import SessionLocal, Base, engine
 from backend.models import User
 from backend.auth import get_password_hash, verify_password, \
-                         create_access_token, decode_access_token, \
-                         get_current_user
+                         create_access_token, decode_access_token
 
 from pydantic import BaseModel
-from datetime import datetime, timezone
 from typing import List
 
 
@@ -75,25 +73,17 @@ async def login(data: UserData, db: AsyncSession = Depends(get_db)):
     result = await db.execute(select(User).where(User.username == data.username))
     user = result.scalars().first()
     if not user or not verify_password(data.password, user.hashed_password):
-        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid credentials")
-    access_token = create_access_token(data={"sub": data.username})
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Неправильные учетные данные")
+
+    access_token = create_access_token(data={"username": data.username})
     return {"access_token": access_token, "token_type": "bearer"}
-
-
-@app.get("/protected/")
-async def protected_route(token: str = Depends(oauth2_scheme)):
-    token = decode_access_token(token)
-    if not token:
-        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Token is invalid or expired")
-
-    return {"message": "You have access to this protected route"}
 
 
 @app.post("/upload-audio/")
 async def upload_audio(token: str = Depends(oauth2_scheme), file: UploadFile = File(...)):
-    token = decode_access_token(token)
-    if not token:
-        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Token is invalid or expired")
+    user = decode_access_token(token)
+    if not user:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Неверный или просроченный токен")
 
     file_location = os.path.join(UPLOAD_DIR, file.filename)
 
@@ -108,9 +98,11 @@ async def upload_audio(token: str = Depends(oauth2_scheme), file: UploadFile = F
     async with httpx.AsyncClient() as client:
         with open(file_location, "rb") as f:
             files = {"file": (file.filename, f, file.content_type or "audio/mpeg")}
+            data = {
+                "user": user.get('username')
+            }
             try:
-                response = await client.post(f'{PLAYER_SERVICE_URL}/add-audio/', files=files)
-                print('response', response)
+                response = await client.post(f'{PLAYER_SERVICE_URL}/add-audio/', files=files, data=data)
                 response.raise_for_status()
             except httpx.HTTPStatusError as e:
                 raise HTTPException(status_code=response.status_code, detail="Failed to send audio to queue")
@@ -176,7 +168,6 @@ async def websocket_endpoint(websocket: WebSocket):
         try:
             while True:
                 try:
-                    # Asynchronously get the current queue from the player service
                     response = await client.get(f'{PLAYER_SERVICE_URL}/get_current_queue/')
                     response.raise_for_status()
                     data = response.json()
@@ -187,7 +178,6 @@ async def websocket_endpoint(websocket: WebSocket):
                     print(f"Request error: {e}")
                     data = {"error": "Connection to player service failed"}
 
-                # Send the queue data to the client
                 await websocket.send_json(data)
 
                 await asyncio.sleep(1)

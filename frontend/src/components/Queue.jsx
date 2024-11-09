@@ -9,7 +9,6 @@ import styled from "styled-components";
 const SPlayButton = styled.button`
     margin-top: 10px;
     padding: 10px 20px;
-    font-size: 16px;
     color: #fff;
     background-color: #000;
     border: none;
@@ -58,6 +57,7 @@ export default function Queue() {
                 setError(data.error)
                 alertify.error(`Ошибка получения данных через WebSocket: ${data.error}`)
             } else {
+                setError('')
                 if (queue.length < data.length) {
                     const excessItems = data.slice(queue.length);
                     const newQueue = queue.concat(excessItems)
@@ -69,7 +69,7 @@ export default function Queue() {
         }
         ws.onerror = (event) => {
             console.error(event)
-            alertify.error(`Ошибка подключения в WebSocket: ${event}`)
+            alertify.error(`Ошибка подключения к WebSocket`)
         }
         return () => {
             ws.close();
@@ -80,28 +80,29 @@ export default function Queue() {
         alertify.success(`Начало проигрывания очереди`)
         setIsPlaying(true)
         for (let i = 0; i < queue.length; i++) {
-          const currentItem = queue[i];
+            const currentItem = queue[i];
             
-          setQueue(queue.map((item, index) => 
-            index === i ? { ...item, is_playing: true } : { filename: item.filename }
-          ));
-      
-          try {
-            await api.get(`/play-audio/?filename=${currentItem.filename}`);
-          } catch (error) {
-            console.error("Error playing audio:", error);
-            alertify.error(`Ошибка воспроизведения ${currentItem.filename}: ${error?.response?.data?.detail}`)
-          }
+            setQueue(queue.map((item, index) => 
+                index === i ? { ...item, is_playing: true } : { filename: item.filename, user: item.user }
+            ));
+        
+            try {
+                await api.get(`/play-audio/?filename=${currentItem.filename}`);
+            } catch (error) {
+                console.error("Error playing audio:", error);
+                alertify.error(`Ошибка воспроизведения ${currentItem.filename}: ${error?.response?.data?.detail}`)
+                break;
+            };
         }
-        setQueue(queue.map(item => ({ filename: item.filename })));
-        setIsPlaying(false)
-        alertify.success(`Конец проигрывания очереди`)
+        setQueue(queue.map(item => ({ filename: item.filename, user: item.user })));
+        setIsPlaying(false);
       };
 
       return (
         <div>
-            {error && <SError>ewfewfewf {error}</SError>}
-            {queue.map((item, index) => <UploadedAudio key={index} index={index} filename={item.filename} disabled={isPlaying} isPlaying={item.is_playing}/>)}
+            {error && <SError>{error}</SError>}
+            {queue.length < 1 && 'Пока в очереди ничего нет' }
+            {queue.map((item, index) => <UploadedAudio key={index} index={index} filename={item.filename} user={item.user} disabled={isPlaying} isPlaying={item.is_playing}/>)}
             {queue.length > 0 && <SPlayButton onClick={playAudioQueue} disabled={isPlaying}>Воспроизвести очередь</SPlayButton>}
         </div>
     );

@@ -63,9 +63,9 @@ jobs:
       - name: Install dependencies (backend)
         run: |
           pip install -r requirements.txt
-          cd player_service
 
       - name: Run Pytest tests
         run: |
+          cd player_service
           pytest tests.py -v
 

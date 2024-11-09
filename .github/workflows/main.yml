@@ -1,19 +1,71 @@
-name: Jest Tests
+# name: Jest Tests
+# on:
+#   push:
+#     branches:
+#       - main
+#   pull_request:
+#     branches: [main]
+# jobs:
+#   Jest:
+#     runs-on: ubuntu-latest
+#     steps:
+#       - uses: actions/checkout@v1
+#       - name: Run Tests
+#         run: |
+#             cd frontend       
+#             npm install 
+#             npm test
+
+
+name: CI Workflow
 
 on:
   push:
     branches:
       - main
   pull_request:
-    branches: [main]
+    branches:
+      - main
 
 jobs:
-  Jest:
+  frontend_tests:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v1
-      - name: Run Tests
+      - name: Checkout repository
+        uses: actions/checkout@v3
+      
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '16'
+
+      - name: Install dependencies (frontend)
         run: |
-            cd frontend       
-            npm install 
-            npm test
+          cd frontend
+          npm install
+
+      - name: Run Jest tests
+        run: |
+          cd frontend
+          npm test
+
+  backend_tests:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v3
+        with:
+          python-version: '3.9'
+
+      - name: Install dependencies (backend)
+        run: |
+          pip install -r requirements.txt
+          cd player_service
+
+      - name: Run Pytest tests
+        run: |
+          pytest tests.py -v
+

@@ -3,7 +3,6 @@ from concurrent import futures
 import audio_pb2, audio_pb2_grpc
 import time
 import os
-import asyncio
 
 
 AUDIO_FILES_DIR = '/Users/nicklesydney/Desktop/Coding/Python/Projects/SberRobotics/backend/uploads/'
@@ -21,13 +20,6 @@ class SoundExecutionService(audio_pb2_grpc.SoundExecutionServiceServicer):
             return audio_pb2.PlayResponse(success=True, message="Playback started")
         else:
             return audio_pb2.PlayResponse(success=False, message="File not found")
-
-    def _play_audio_file(self, filename):
-        """Simulate audio playback asynchronously."""
-        print(f"Playing {filename} asynchronously...")
-        asyncio.run(asyncio.sleep(5))  # Имитация воспроизведения
-        print(f"Playback finished for {filename}")
-
 
 def serve():
     server = grpc.server(futures.ThreadPoolExecutor(max_workers=10))

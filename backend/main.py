@@ -16,16 +16,8 @@ from backend.database import Base, engine, get_db
 from backend.models import User, UserData
 from backend.auth import get_password_hash, verify_password, \
                          create_access_token, decode_access_token
+from contextlib import asynccontextmanager
 
-
-app = FastAPI()
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=["http://localhost:3000"], # React
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
 
 # Constants
 OAUTH2_SCHEME = OAuth2PasswordBearer(tokenUrl="token")
@@ -35,29 +27,45 @@ UPLOAD_DIR = "uploads"
 os.makedirs(UPLOAD_DIR, exist_ok=True)
 
 
-@app.on_event("startup")
-async def startup():
+# @app.on_event("startup")
+# async def startup():
+#     async with engine.begin() as conn:
+#         await conn.run_sync(Base.metadata.create_all)
+
+
+@asynccontextmanager
+async def lifespan(app):
     async with engine.begin() as conn:
         await conn.run_sync(Base.metadata.create_all)
+    yield
+
+app = FastAPI(lifespan=lifespan)
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["http://localhost:3000"], # React
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 
 # Routes
 @app.post("/register/")
 async def register(data: UserData, db: AsyncSession = Depends(get_db)):
+    
     # Проверка БД на наличие юзера
     existing_user = await db.execute(select(User).where(User.username == data.username))
     if existing_user.scalar() is not None:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Пользователь с таким именем уже существует"
-        )
+            detail="Пользователь с таким именем уже существует")
 
     # Создание нового юзера
     if len(data.password) < 6:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Пароль должен быть минимум 6 символов"
-        )
+            detail="Пароль должен быть минимум 6 символов")
+    
     user = User(username=data.username, hashed_password=get_password_hash(data.password))
     db.add(user)
     try:
@@ -66,8 +74,7 @@ async def register(data: UserData, db: AsyncSession = Depends(get_db)):
         await db.rollback()
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail=f"Произошла ошибка при создании юзера: {e}"
-        )
+            detail=f"Произошла ошибка при создании юзера: {e}")
 
     return {"message": "Успешная регистрация"}
 

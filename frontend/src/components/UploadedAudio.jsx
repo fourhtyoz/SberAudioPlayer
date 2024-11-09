@@ -3,7 +3,7 @@ import { api } from "../utils/api";
 import alertify from 'alertifyjs';
 import 'alertifyjs/build/css/alertify.css';
 import styled from "styled-components";
-import AudioAnimation from "./PlayingAnimation";
+import PlayingAnimation from "./PlayingAnimation";
 
 
 const SAudioWrapper = styled.div`
@@ -73,7 +73,7 @@ export default function UploadedAudio({ index, filename, user, disabled, isPlayi
                 alertify.error(`Ошибка при удалении файла ${filename} из очереди. Код ошибки: ${res.status}`)
             }
         } catch (error) {
-            console.error(error)
+            // console.error(error)
             alertify.error(`Ошибка при удалении файл ${filename} из очереди: ${error?.response?.data?.detail}`)
         }
     };
@@ -81,7 +81,7 @@ export default function UploadedAudio({ index, filename, user, disabled, isPlayi
     return (
         <SAudioWrapper>
             {isPlaying 
-            ? <AudioAnimation/>
+            ? <PlayingAnimation/>
             : <SIndex>#{index+1}:</SIndex>
             }
             

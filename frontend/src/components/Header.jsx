@@ -1,8 +1,8 @@
 import React from "react"
 import styled from "styled-components";
-import useIsMobile from "../hooks/useMobile";
-import { useContext } from "react";
-import { AuthContext } from "../AuthContext";
+import useIsMobile from "../hooks/useIsMobile";
+// import { useContext } from "react";
+// import { AuthContext } from "../AuthContext";
 import alertify from 'alertifyjs';
 import 'alertifyjs/build/css/alertify.css';
 
@@ -57,8 +57,7 @@ const SButton = styled.button`
     }
 `
 
-export default function Header() {
-    const { user, logout } = useContext(AuthContext)
+export default function Header({ user, logout }) {
     const isMobile = useIsMobile();
 
     const handleLogout = async () => {

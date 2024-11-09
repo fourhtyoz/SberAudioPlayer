@@ -89,7 +89,7 @@ export default function Queue() {
             try {
                 await api.get(`/play-audio/?filename=${currentItem.filename}`);
             } catch (error) {
-                console.error("Error playing audio:", error);
+                // console.error("Error playing audio:", error);
                 alertify.error(`Ошибка воспроизведения ${currentItem.filename}: ${error?.response?.data?.detail}`)
                 break;
             };

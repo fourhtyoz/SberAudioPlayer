@@ -1,10 +1,11 @@
 import React from 'react';
 import Queue from './Queue';
 import styled from 'styled-components';
-import { useContext } from 'react';
-import { AuthContext } from '../AuthContext';
+// import { useContext } from 'react';
+// import { AuthContext } from '../AuthContext';
 import Login from './Login';
 import AudioDropzone from './AudioDropzone';
+// import { login } from '../auth';
 
 
 const SMain = styled.main`
@@ -25,14 +26,13 @@ const SText = styled.div`
     text-align: center;
 `
 
-export default function Main() {
-    const { isAuthenticated } = useContext(AuthContext)
+export default function Main({ isAuthenticated, login }) {
 
     if (!isAuthenticated) {
         return (
             <SMain>
                 <SText>Чтобы воспользоваться сервисом, необходимо войти или зарегистрироваться</SText>
-                <Login />
+                <Login isAuthenticated={isAuthenticated} login={login} />
             </SMain>
         ) 
     } else {

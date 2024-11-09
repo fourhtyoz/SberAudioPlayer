@@ -19,7 +19,7 @@ const Bar = styled.div`
     border-radius: 2px; 
 `
 
-export default function AudioAnimation() {
+export default function PlayingAnimation() {
     return (
         <SAnimation className="audio-visualizer" title="Воспроизводится">
             <Bar className="bar"></Bar>

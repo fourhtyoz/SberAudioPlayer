@@ -4,8 +4,8 @@ import { register } from '../utils/api';
 import alertify from 'alertifyjs';
 import 'alertifyjs/build/css/alertify.css';
 import styled from 'styled-components';
-import { useContext } from 'react';
-import { AuthContext } from '../AuthContext';
+// import { useContext } from 'react';
+// import { AuthContext } from '../AuthContext';
 
 
 const SRow = styled.div`
@@ -61,11 +61,9 @@ const StyledInput = styled.input`
 `;
 
 
-export default function Login() {
+export default function Login({ isAuthenticated, login }) {
     const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
-
-    const { isAuthenticated, login } = useContext(AuthContext)
 
     const handleRegister = async () => {
         try {
@@ -73,7 +71,7 @@ export default function Login() {
             alertify.success('Регистрация прошла успешно')
             await handleLogin()
         } catch (error) {
-            console.log(error)
+            // console.log(error)
             alertify.error(`Ошибка при регистрации: ${error?.response?.data?.detail}`)
         }
     };

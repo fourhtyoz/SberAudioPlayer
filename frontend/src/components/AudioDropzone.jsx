@@ -17,7 +17,7 @@ function AudioDropzone() {
             formData.append('file', file);
     
             try {
-                const res = await api.post('http://localhost:8000/upload-audio/', formData, 
+                const res = await api.post('/upload-audio/', formData, 
                     { headers: {'Content-Type': 'multipart/form-data'} }
                 );
                 if (res.status === 200) {

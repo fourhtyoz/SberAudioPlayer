@@ -12,12 +12,12 @@ SOUND_EXECUTION_SERVICE_ADDRESS = "localhost:50051"
 @app.post("/add-audio/")
 async def add_audio_to_queue(user: str = Form(...), file: UploadFile = File(...)):
     if not file.content_type.startswith("audio/"):
-        raise HTTPException(status_code=400, detail="Invalid file type")
+        raise HTTPException(status_code=400, detail="Неправильный тип файла")
 
     file_content = await file.read()
     audio_queue.put({'filename': file.filename, 'content': file_content, 'user': user})
 
-    response = {"message": "File added to queue successfully"}
+    response = {"message": "Файл был успешно добавлен в очередь"}
     return response
 
 
@@ -35,7 +35,7 @@ async def play_audio(index: str):
         return e
 
     audio_queue = new_queue
-    response = {"message": f"{index} has been deleted from the queue"}
+    response = {"message": f"#{index} файл был удален из очереди"}
     return response
 
 
@@ -79,17 +79,8 @@ async def play_audio(filename: str):
             response = await stub.PlayAudio(request)
             print('response', response)
             if response.success:
-                print(f"Successfully started playback: {filename}")
+                print(f"Успешное начало воспроизведения: {filename}")
             else:
-                print(f"Failed to play audio: {response.message}")
+                print(f"Не удалось воспроизвести файл: {response.message}")
         except grpc.RpcError as e:
             raise HTTPException(status_code=500, detail=f"gRPC error: {e}")
-
-# # Main loop to process the queue
-# async def process_queue():
-#     while True:
-#         if not audio_queue.empty():
-#             filename = audio_queue.get()
-#             await play_audio(filename)
-#         else:
-#             await asyncio.sleep(1)  # Wait before checking the queue again

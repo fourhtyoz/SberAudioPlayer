@@ -92,9 +92,8 @@ async def upload_audio(token: str = Depends(oauth2_scheme), file: UploadFile = F
             while chunk := await file.read(CHUNK_SIZE):
                 f.write(chunk)
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Failed to save file: {e}")
+        raise HTTPException(status_code=500, detail=f"Не удалось сохранить файл: {e}")
 
-    # Forward the file to the player service
     async with httpx.AsyncClient() as client:
         with open(file_location, "rb") as f:
             files = {"file": (file.filename, f, file.content_type or "audio/mpeg")}
@@ -105,29 +104,29 @@ async def upload_audio(token: str = Depends(oauth2_scheme), file: UploadFile = F
                 response = await client.post(f'{PLAYER_SERVICE_URL}/add-audio/', files=files, data=data)
                 response.raise_for_status()
             except httpx.HTTPStatusError as e:
-                raise HTTPException(status_code=response.status_code, detail="Failed to send audio to queue")
+                raise HTTPException(status_code=response.status_code, detail="Не удалось отправить файл в очередь")
             except Exception as e:
-                raise HTTPException(status_code=500, detail=f"Error in forwarding file: {e}")
+                raise HTTPException(status_code=500, detail=f"Ошибка при отправке запроса в player_service: {e}")
 
-    return {"message": "File uploaded and forwarded successfully"}
+    return {"message": "Файл был успешно добавлен в очередь"}
 
 
 @app.post("/delete-audio/")
 async def delete_audio(index: str, token: str = Depends(oauth2_scheme)):
     token = decode_access_token(token)
     if not token:
-        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Token is invalid or expired")
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Неверный или просроченный токен")
 
     async with httpx.AsyncClient() as client:
         try:
             response = await client.post(f'{PLAYER_SERVICE_URL}/delete-audio/?index={index}')
             response.raise_for_status()
         except httpx.HTTPStatusError as e:
-            raise HTTPException(status_code=response.status_code, detail="Failed to delete a file from the queue")
+            raise HTTPException(status_code=response.status_code, detail="Не удалось удалить файл из очереди")
         except Exception as e:
-            raise HTTPException(status_code=500, detail=f"Error in forwarding file: {e}")
+            raise HTTPException(status_code=500, detail=f"Ошибка при отправке запроса в player_service: {e}")
 
-    return {'message': 'deleted'}
+    return {'message': 'Файл был успешно удален'}
 
 
 # @app.get('/play-queue/')
@@ -147,17 +146,18 @@ async def delete_audio(index: str, token: str = Depends(oauth2_scheme)):
 async def play_audio(filename: str, token: str = Depends(oauth2_scheme)):
     token = decode_access_token(token)
     if not token:
-        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Token is invalid or expired")
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Неверный или просроченный токен")
 
     async with httpx.AsyncClient(timeout=60.0) as client:
         try:
             response = await client.get(f'{PLAYER_SERVICE_URL}/play-audio/?filename={filename}')
             response.raise_for_status()
         except httpx.HTTPStatusError as e:
-            raise HTTPException(status_code=response.status_code, detail="Failed to play the audio")
+            raise HTTPException(status_code=response.status_code, detail="Не удалось воспроизвести файл")
         except Exception as e:
-                raise HTTPException(status_code=500, detail=f"Error in playing the file: {e}")
-    return {"message": "Finished"}
+                raise HTTPException(status_code=500, detail=f"Ошибка при воспроизведении файла: {e}")
+    
+    return {"message": "Конец воспроизведения"}
 
 
 @app.websocket("/ws/queue/")
@@ -173,14 +173,14 @@ async def websocket_endpoint(websocket: WebSocket):
                     data = response.json()
                 except httpx.HTTPStatusError as e:
                     print(f"HTTP error occurred: {e}")
-                    data = {"error": "Failed to retrieve queue data"}
+                    data = {"error": "Не удалось забрать текущую очередь из player_service"}
                 except httpx.RequestError as e:
                     print(f"Request error: {e}")
-                    data = {"error": "Connection to player service failed"}
+                    data = {"error": "Не удалось подключиться к player_service"}
 
                 await websocket.send_json(data)
-
                 await asyncio.sleep(1)
+                
         except WebSocketDisconnect:
             print("WebSocket disconnected")
         except Exception as e:

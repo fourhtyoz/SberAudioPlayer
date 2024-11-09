@@ -27,12 +27,6 @@ UPLOAD_DIR = "uploads"
 os.makedirs(UPLOAD_DIR, exist_ok=True)
 
 
-# @app.on_event("startup")
-# async def startup():
-#     async with engine.begin() as conn:
-#         await conn.run_sync(Base.metadata.create_all)
-
-
 @asynccontextmanager
 async def lifespan(app):
     async with engine.begin() as conn:

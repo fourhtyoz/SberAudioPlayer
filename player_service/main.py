@@ -32,7 +32,7 @@ async def play_audio(index: str):
         for item in current_queue:
             new_queue.put(item)
     except Exception as e:
-        return e
+        raise HTTPException(status_code=400, detail=f'Не удалось удалить #{index}')
 
     audio_queue = new_queue
     response = {"message": f"#{index} файл был удален из очереди"}
@@ -59,7 +59,11 @@ async def play_audio(filename: str):
             print('response', response)
             if response.success:
                 print(f"Успешное начало воспроизведения: {filename}")
+                response = f"Успешное начало воспроизведения: {filename}"
+                return response
             else:
                 print(f"Не удалось воспроизвести файл: {response.message}")
+                response = f"Не удалось воспроизвести файл: {response.message}"
+                return response
         except grpc.RpcError as e:
             raise HTTPException(status_code=500, detail=f"gRPC error: {e}")

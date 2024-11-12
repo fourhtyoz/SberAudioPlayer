@@ -5,8 +5,8 @@ from fastapi.middleware.cors import CORSMiddleware
 
 # Проблема с путями для ci/cd и в докере
 import os
-backend_cicd = os.getenv('backend_cicd')
-if backend_cicd:
+GITHUB_CICD = os.getenv('GITHUB_CICD')
+if GITHUB_CICD:
     from . import audio_pb2, audio_pb2_grpc
 else:
     import audio_pb2, audio_pb2_grpc

@@ -8,6 +8,8 @@ RUN pip install --no-cache-dir -r requirements.txt
 
 COPY . /sounds_execution_service
 
+ENV PYTHONUNBUFFERED=1
+
 EXPOSE 50051
 CMD ["python", "main.py"]
 

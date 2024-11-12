@@ -1,6 +1,7 @@
 import React from "react"
 import styled from "styled-components"
 
+
 const SAnimation = styled.div`
     display: flex;
     align-items: flex-end;
@@ -9,7 +10,7 @@ const SAnimation = styled.div`
     right: 15px;
     top: -10px;
     margin-right: 9px;
-`
+`;
 
 const Bar = styled.div`
     width: 5px;
@@ -17,7 +18,8 @@ const Bar = styled.div`
     background-color: #4caf50;
     animation: bounce 0.5s ease infinite alternate;
     border-radius: 2px; 
-`
+`;
+
 
 export default function PlayingAnimation() {
     return (

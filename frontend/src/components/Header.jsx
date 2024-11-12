@@ -10,21 +10,21 @@ const SHeader = styled.header`
     padding: 1em;
     display: flex;
     justify-content: ${({ isMobile }) => (isMobile ? 'center' : 'space-between')};
-`
+`;
 
 const STitle = styled.h1`
     text-align: center;
     display: flex;
     justify-content: center;
     align-items: center;
-`
+`;
 
 const SUserInfo = styled.div`
     text-align: center;
     display: flex;
     justify-content: center;
     align-items: center;
-`
+`;
 
 const SButton = styled.button`
     width: 100%;
@@ -53,7 +53,8 @@ const SButton = styled.button`
         background-color: #ccc;
         cursor: not-allowed;
     }
-`
+`;
+
 
 export default function Header({ user, logout }) {
     const isMobile = useIsMobile();

@@ -9,7 +9,8 @@ import { useContext } from 'react';
 const SWrapper = styled.div`
     display: flex;
     flex-direction: column;
-`
+`;
+
 
 export default function App() {
     const { user, isAuthenticated, login, logout } = useContext(AuthContext)

@@ -31,8 +31,10 @@ const SPlayButton = styled.button`
     &:disabled {
         background-color: #ccc;
         cursor: not-allowed;
+        border: 1px solid #cecece;
+        color: white;
     }
-`
+`;
 
 const SError = styled.div`
     display: flex;
@@ -41,7 +43,7 @@ const SError = styled.div`
     color: red;
     margin-bottom: 20px;
     font-weight: bold;
-`
+`;
 
 
 export default function Queue() {
@@ -55,7 +57,6 @@ export default function Queue() {
             const data = JSON.parse(event.data)
             if (data?.error) {
                 setError(data.error)
-                // alertify.error(`Ошибка получения данных через WebSocket: ${data.error}`)
             } else {
                 setError('')
                 if (queue.length < data.length) {
@@ -89,8 +90,12 @@ export default function Queue() {
             try {
                 await api.get(`/play-audio/?filename=${currentItem.filename}`);
             } catch (error) {
-                // console.error("Error playing audio:", error);
-                alertify.error(`Ошибка воспроизведения ${currentItem.filename}: ${error?.response?.data?.detail}`)
+                console.error(error)
+                if (error?.response?.data?.detail) {
+                    alertify.error(`Ошибка воспроизведения ${currentItem.filename}: ${error.response.data.detail}`)
+                } else {
+                    alertify.error(`Ошибка воспроизведения ${currentItem.filename}. Повторите попытку позже`)
+                }
                 break;
             };
         }

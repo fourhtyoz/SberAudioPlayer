@@ -27,8 +27,12 @@ function AudioDropzone() {
                     alertify.error(`Ошибка при загрузке файла. Код ошибки: ${res.status}`)
                 }
             } catch (error) {
-                console.error("Failed to upload file:", error);
-                alertify.error(`Ошибка при загрузке файла: ${error?.response?.data?.detail}`)
+                console.log(error)
+                if (error?.response?.data?.detail) {
+                    alertify.error(`Ошибка при загрузке файла: ${error?.response?.data?.detail}`)
+                } else {
+                    alertify.error(`Ошибка при загрузке файла. Повторите попытку позже`)
+                }
             }
         };
 

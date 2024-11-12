@@ -4,8 +4,6 @@ import { register } from '../utils/api';
 import alertify from 'alertifyjs';
 import 'alertifyjs/build/css/alertify.css';
 import styled from 'styled-components';
-// import { useContext } from 'react';
-// import { AuthContext } from '../AuthContext';
 
 
 const SRow = styled.div`
@@ -71,8 +69,12 @@ export default function Login({ isAuthenticated, login }) {
             alertify.success('Регистрация прошла успешно')
             await handleLogin()
         } catch (error) {
-            // console.log(error)
-            alertify.error(`Ошибка при регистрации: ${error?.response?.data?.detail}`)
+            console.log(error)
+            if (error?.response?.data?.detail) {
+                alertify.error(`Ошибка при регистрации: ${error?.response?.data?.detail}`)
+            } else {
+                alertify.error(`Ошибка при регистрации. Повторите попытку позже`)
+            }
         }
     };
 
@@ -82,7 +84,11 @@ export default function Login({ isAuthenticated, login }) {
             alertify.success('Вы вошли в свой аккаунт')
         } catch (error) {
             console.log(error)
-            alertify.error(`Ошибка при входе в аккаунт: ${error?.response?.data?.detail}`)
+            if (error?.response?.data?.detail) {
+                alertify.error(`Ошибка при входе в аккаунт: ${error.response.data.detail}`)
+            } else {
+                alertify.error(`Ошибка при входе в аккаунт. Повторите попытку позже`)
+            }
         }
     };
 

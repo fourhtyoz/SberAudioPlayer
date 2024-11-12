@@ -8,7 +8,7 @@ import PlayingAnimation from "./PlayingAnimation";
 
 const SAudioWrapper = styled.div`
     display: flex;
-`
+`;
 
 const SIndex = styled.h3`
     display: flex;
@@ -17,7 +17,7 @@ const SIndex = styled.h3`
     text-align: center;
     margin-right: 10px;
     width: 40px;
-`
+`;
 
 const SAudioCard = styled.div`
     border: 1px solid #cccccc;
@@ -29,7 +29,7 @@ const SAudioCard = styled.div`
     border-right: none;
     width: 335px;
     overflow: hidden;
-`
+`;
 
 const SDeleteButton = styled.button`
     margin-bottom: 10px;
@@ -54,12 +54,11 @@ const SDeleteButton = styled.button`
         border: 1px solid #cecece;
         color: white;
     }
-`
+`;
 
 const SCardText = styled.span`
     margin-inline: 10px;
-`
-
+`;
 
 
 export default function UploadedAudio({ index, filename, user, disabled, isPlaying }) {
@@ -73,8 +72,12 @@ export default function UploadedAudio({ index, filename, user, disabled, isPlayi
                 alertify.error(`Ошибка при удалении файла ${filename} из очереди. Код ошибки: ${res.status}`)
             }
         } catch (error) {
-            // console.error(error)
-            alertify.error(`Ошибка при удалении файл ${filename} из очереди: ${error?.response?.data?.detail}`)
+            console.error(error)
+            if (error?.response?.data?.detail) {
+                alertify.error(`Ошибка при удалении файл ${filename} из очереди: ${error.response.data.detail}`)
+            } else {
+                alertify.error(`Ошибка при удалении файл ${filename} из очереди. Повторите попытку позже`)
+            }
         }
     };
 

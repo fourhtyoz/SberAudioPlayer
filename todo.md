@@ -1,3 +1,5 @@
 1. requirements.txt [ ]
 2. readme [ ]
 3. webpack [ ]
+4. запускать 1 трек [ ]
+5. проигрывать звук [ ] 

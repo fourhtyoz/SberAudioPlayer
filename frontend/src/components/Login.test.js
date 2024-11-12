@@ -21,7 +21,7 @@ describe('Login Component', () => {
   test('renders input fields and buttons when not authenticated', () => {
     render(<Login isAuthenticated={false} login={mockLogin} />);
     
-    expect(screen.getByPlaceholderText('Имя')).toBeInTheDocument();
+    expect(screen.getByPlaceholderText('Имя (минимум 3 символа)')).toBeInTheDocument();
     expect(screen.getByPlaceholderText('Пароль (минимум 6 символов)')).toBeInTheDocument();
     expect(screen.getByText('Вход')).toBeInTheDocument();
     expect(screen.getByText('Регистрация')).toBeInTheDocument();
@@ -30,7 +30,7 @@ describe('Login Component', () => {
   test('updates state on input change', () => {
     render(<Login isAuthenticated={false} login={mockLogin} />);
 
-    const usernameInput = screen.getByPlaceholderText('Имя');
+    const usernameInput = screen.getByPlaceholderText('Имя (минимум 3 символа)');
     const passwordInput = screen.getByPlaceholderText('Пароль (минимум 6 символов)');
 
     fireEvent.change(usernameInput, { target: { value: 'testuser' } });
@@ -43,7 +43,7 @@ describe('Login Component', () => {
   test('calls handleLogin on "Вход" button click', async () => {
     render(<Login isAuthenticated={false} login={mockLogin} />);
 
-    const usernameInput = screen.getByPlaceholderText('Имя');
+    const usernameInput = screen.getByPlaceholderText('Имя (минимум 3 символа)');
     const passwordInput = screen.getByPlaceholderText('Пароль (минимум 6 символов)');
 
     fireEvent.change(usernameInput, { target: { value: 'testuser' } });
@@ -61,7 +61,7 @@ describe('Login Component', () => {
 
     render(<Login isAuthenticated={false} login={mockLogin} />);
 
-    const usernameInput = screen.getByPlaceholderText('Имя');
+    const usernameInput = screen.getByPlaceholderText('Имя (минимум 3 символа)');
     const passwordInput = screen.getByPlaceholderText('Пароль (минимум 6 символов)');
 
     fireEvent.change(usernameInput, { target: { value: 'newuser' } });
@@ -79,7 +79,7 @@ describe('Login Component', () => {
 
     render(<Login isAuthenticated={false} login={mockLogin} />);
 
-    const usernameInput = screen.getByPlaceholderText('Имя');
+    const usernameInput = screen.getByPlaceholderText('Имя (минимум 3 символа)');
     const passwordInput = screen.getByPlaceholderText('Пароль (минимум 6 символов)');
 
     fireEvent.change(usernameInput, { target: { value: 'newuser' } });

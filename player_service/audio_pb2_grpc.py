@@ -2,7 +2,14 @@
 """Client and server classes corresponding to protobuf-defined services."""
 import grpc
 import warnings
-import audio_pb2 as audio__pb2
+
+# Проблема с путями для ci/cd и в докере
+import os
+backend_cicd = os.getenv('backend_cicd')
+if backend_cicd:
+    from . import audio_pb2 as audio__pb2
+else:
+    import audio_pb2 as audio__pb2
 
 GRPC_GENERATED_VERSION = '1.67.1'
 GRPC_VERSION = grpc.__version__

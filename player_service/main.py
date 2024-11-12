@@ -2,7 +2,14 @@ import grpc
 from queue import Queue
 from fastapi import FastAPI, UploadFile, File, HTTPException, Form
 from fastapi.middleware.cors import CORSMiddleware
-import audio_pb2, audio_pb2_grpc
+
+# Проблема с путями для ci/cd и в докере
+import os
+backend_cicd = os.getenv('backend_cicd')
+if backend_cicd:
+    from . import audio_pb2, audio_pb2_grpc
+else:
+    import audio_pb2, audio_pb2_grpc
 
 
 app = FastAPI()

@@ -55,7 +55,7 @@ export default function Queue() {
             const data = JSON.parse(event.data)
             if (data?.error) {
                 setError(data.error)
-                alertify.error(`Ошибка получения данных через WebSocket: ${data.error}`)
+                // alertify.error(`Ошибка получения данных через WebSocket: ${data.error}`)
             } else {
                 setError('')
                 if (queue.length < data.length) {

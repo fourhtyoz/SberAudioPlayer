@@ -12,18 +12,18 @@ from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
 
-from backend.database import Base, engine, get_db
-from backend.models import User, UserData
-from backend.auth import get_password_hash, verify_password, \
-                         create_access_token, decode_access_token
+from database import Base, engine, get_db
+from models import User, UserData
+from auth import get_password_hash, verify_password, \
+                 create_access_token, decode_access_token
 from contextlib import asynccontextmanager
 
 
 # Constants
 OAUTH2_SCHEME = OAuth2PasswordBearer(tokenUrl="token")
-PLAYER_SERVICE_URL = "http://localhost:8001"
+PLAYER_SERVICE_URL = 'http://player:8001'
 CHUNK_SIZE = 1024 * 1024  # 1 MB
-UPLOAD_DIR = "/tmp/uploads"
+UPLOAD_DIR = '/tmp/uploads'
 os.makedirs(UPLOAD_DIR, exist_ok=True)
 
 
@@ -36,7 +36,20 @@ async def lifespan(app):
 app = FastAPI(lifespan=lifespan)
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000"], # React
+    allow_origins=[
+                    "http://localhost:3000",
+                    "http://frontend:3000", 
+                    "http://0.0.0.0:3000", 
+                    "http://127.0.0.1:3000",
+                    "http://player:8001", 
+                    "http://localhost:8001",
+                    "http://0.0.0.0:8001", 
+                    "http://127.0.0.1:8001",
+                    "http://sounds:50051", 
+                    "http://localhost:50051",
+                    "http://0.0.0.0:50051", 
+                    "http://127.0.0.1:50051",
+                ],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],

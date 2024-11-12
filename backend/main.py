@@ -73,6 +73,11 @@ async def register(data: UserData, db: AsyncSession = Depends(get_db)):
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="Пароль должен быть минимум 6 символов")
     
+    if len(data.username) < 3:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Логин должен быть минимум 3 символа")
+    
     user = User(username=data.username, hashed_password=get_password_hash(data.password))
     db.add(user)
     try:

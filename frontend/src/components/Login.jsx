@@ -8,7 +8,7 @@ import styled from 'styled-components';
 
 const SRow = styled.div`
     display: flex;
-`
+`;
 
 const SButton = styled.button`
     margin-top: 10px;
@@ -23,7 +23,7 @@ const SButton = styled.button`
     border: 1px solid #000;
     display: block;
 
-        &:hover {
+    &:hover {
         border: 1px solid #cecece;
         color: #000;
         background-color: #FFF;
@@ -36,6 +36,8 @@ const SButton = styled.button`
     &:disabled {
         background-color: #ccc;
         cursor: not-allowed;
+        border: 1px solid #cecece;
+        color: white;
     }
 `;
 
@@ -62,6 +64,8 @@ const StyledInput = styled.input`
 export default function Login({ isAuthenticated, login }) {
     const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
+    
+    const disabled = username.length < 3 || password.length < 6
 
     const handleRegister = async () => {
         try {
@@ -97,13 +101,13 @@ export default function Login({ isAuthenticated, login }) {
             {!isAuthenticated &&
                 <>
                     <SRow>
-                        <StyledInput type="text" placeholder="Имя" value={username} onChange={(e) => setUsername(e.target.value)} />
+                        <StyledInput type="text" placeholder="Имя (минимум 3 символа)" value={username} onChange={(e) => setUsername(e.target.value)} />
                     </SRow>
                     <SRow>
                         <StyledInput type="password" placeholder="Пароль (минимум 6 символов)" value={password} onChange={(e) => setPassword(e.target.value)} />
                     </SRow>
-                        <SButton onClick={handleLogin}>Вход</SButton>
-                        <SButton onClick={handleRegister}>Регистрация</SButton>
+                        <SButton onClick={handleLogin} disabled={disabled} >Вход</SButton>
+                        <SButton onClick={handleRegister} disabled={disabled}>Регистрация</SButton>
                 </>
             }
         </nav>

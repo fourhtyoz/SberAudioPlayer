@@ -33,7 +33,7 @@ jobs:
   backend_tests:
     runs-on: ubuntu-latest
     env:
-       GITHUB_CICD: "True"
+       GITHUB_CICD: '1'
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3

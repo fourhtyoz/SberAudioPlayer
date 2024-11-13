@@ -1,38 +1,21 @@
+import os
 import grpc
 from queue import Queue
 from fastapi import FastAPI, UploadFile, File, HTTPException, Form
-from fastapi.middleware.cors import CORSMiddleware
 
 # Проблема с путями для ci/cd и в докере
-import os
 GITHUB_CICD = os.getenv('GITHUB_CICD')
-if GITHUB_CICD:
-    from . import audio_pb2, audio_pb2_grpc
+ENV_LOCAL = os.getenv('ENV_LOCAL')
+if GITHUB_CICD or ENV_LOCAL:
+    from player_service import audio_pb2, audio_pb2_grpc
+    SOUND_EXECUTION_SERVICE_ADDRESS = "localhost:50051"
 else:
     import audio_pb2, audio_pb2_grpc
+    SOUND_EXECUTION_SERVICE_ADDRESS = "sounds:50051"
 
 
 app = FastAPI()
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=["http://frontend:3000", 
-                   "http://localhost:3000",
-                   "http://0.0.0.0:3000", 
-                   "http://127.0.0.1:3000",
-                   "http://player:8001", 
-                   "http://localhost:8001",
-                   "http://0.0.0.0:8001",
-                   "http://127.0.0.1:8001",
-                   "http://sounds:50051", 
-                   "http://localhost:50051",
-                   "http://0.0.0.0:50051", 
-                   "http://127.0.0.1:50051"],
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
 audio_queue = Queue()
-SOUND_EXECUTION_SERVICE_ADDRESS = "sounds:50051"
 
 
 @app.post("/add-audio/")
@@ -58,6 +41,7 @@ async def play_audio(index: str):
         for item in current_queue:
             new_queue.put(item)
     except Exception as e:
+        print(e)
         raise HTTPException(status_code=400, detail=f'Не удалось удалить #{index}')
 
     audio_queue = new_queue
@@ -92,4 +76,5 @@ async def play_audio(filename: str):
                 response = f"Не удалось воспроизвести файл: {response.message}"
                 return response
         except grpc.RpcError as e:
+            print(e)
             raise HTTPException(status_code=500, detail=f"gRPC error: {e}")

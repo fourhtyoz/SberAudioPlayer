@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import { api } from "../utils/api";
 import alertify from 'alertifyjs';
 import 'alertifyjs/build/css/alertify.css';
@@ -31,7 +31,7 @@ const SAudioCard = styled.div`
     overflow: hidden;
 `;
 
-const SDeleteButton = styled.button`
+const SButton = styled.button`
     margin-bottom: 10px;
     padding: 25px;
     color: #fff;
@@ -41,6 +41,7 @@ const SDeleteButton = styled.button`
     transition: background-color 0.3s ease, transform 0.2s ease;
     border: 1px solid #000;
     display: block;
+    margin-right: 1px;
 
     &:hover {
         border: 1px solid #cecece;
@@ -61,7 +62,8 @@ const SCardText = styled.span`
 `;
 
 
-export default function UploadedAudio({ index, filename, user, disabled, isPlaying }) {
+export default function UploadedAudio({ index, filename, user, disabled, isPlaying, setIsPlaying }) {
+    const [isOn, setIsOn] = useState(isPlaying)
     const handleDelete = async () => {
         try {
             const res = await api.post(`/delete-audio/?index=${index}`);
@@ -81,9 +83,27 @@ export default function UploadedAudio({ index, filename, user, disabled, isPlayi
         }
     };
 
+    const handlePlay = async () => {
+        setIsPlaying(true)
+        setIsOn(true)
+        try {
+            await api.get(`/play-audio/?filename=${filename}`);
+        } catch (error) {
+            console.error(error)
+            if (error?.response?.data?.detail) {
+                alertify.error(`Ошибка воспроизведения ${filename}: ${error.response.data.detail}`)
+            } else {
+                alertify.error(`Ошибка воспроизведения ${filename}. Повторите попытку позже`)
+            }
+        } finally {
+            setIsPlaying(false)
+            setIsOn(false)
+        }
+    }
+
     return (
         <SAudioWrapper>
-            {isPlaying 
+            {isOn || isPlaying
             ? <PlayingAnimation/>
             : <SIndex>#{index+1}:</SIndex>
             }
@@ -92,7 +112,8 @@ export default function UploadedAudio({ index, filename, user, disabled, isPlayi
                 <SCardText>Название: {filename}</SCardText>
                 <SCardText>Загрузил: {user}</SCardText>
             </SAudioCard>
-            <SDeleteButton onClick={handleDelete} disabled={disabled}>Удалить</SDeleteButton>
+            <SButton onClick={handlePlay} disabled={disabled}>Воспроизвести</SButton>
+            <SButton onClick={handleDelete} disabled={disabled}>Удалить</SButton>
         </SAudioWrapper>
     )
 }

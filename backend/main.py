@@ -12,16 +12,30 @@ from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
 
-from database import Base, engine, get_db
-from models import User, UserData
-from auth import get_password_hash, verify_password, \
-                 create_access_token, decode_access_token
 from contextlib import asynccontextmanager
+
+GITHUB_CICD = os.getenv('GITHUB_CICD')
+ENV_LOCAL = os.getenv('ENV_LOCAL')
+if ENV_LOCAL:
+    from backend.database import Base, engine, get_db
+    from backend.models import User, UserData
+    from backend.auth import get_password_hash, verify_password, \
+                             create_access_token, decode_access_token
+else:
+    from database import Base, engine, get_db
+    from models import User, UserData
+    from auth import get_password_hash, verify_password, \
+                     create_access_token, decode_access_token
 
 
 # Constants
 OAUTH2_SCHEME = OAuth2PasswordBearer(tokenUrl="token")
-PLAYER_SERVICE_URL = 'http://player:8001'
+
+if ENV_LOCAL:
+    PLAYER_SERVICE_URL = 'http://localhost:8001'
+else:
+    PLAYER_SERVICE_URL = 'http://player:8001'
+
 CHUNK_SIZE = 1024 * 1024  # 1 MB
 UPLOAD_DIR = '/tmp/uploads'
 os.makedirs(UPLOAD_DIR, exist_ok=True)
@@ -36,19 +50,10 @@ async def lifespan(app):
 app = FastAPI(lifespan=lifespan)
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[
-                    "http://localhost:3000",
-                    "http://frontend:3000", 
-                    "http://0.0.0.0:3000", 
-                    "http://127.0.0.1:3000",
-                    "http://player:8001", 
-                    "http://localhost:8001",
-                    "http://0.0.0.0:8001", 
-                    "http://127.0.0.1:8001",
-                    "http://sounds:50051", 
-                    "http://localhost:50051",
-                    "http://0.0.0.0:50051", 
-                    "http://127.0.0.1:50051",
+    allow_origins=["http://localhost:3000",
+                   "http://frontend:3000", 
+                   "http://0.0.0.0:3000", 
+                   "http://127.0.0.1:3000",
                 ],
     allow_credentials=True,
     allow_methods=["*"],
@@ -163,9 +168,11 @@ async def play_audio(filename: str, token: str = Depends(OAUTH2_SCHEME)):
             response = await client.get(f'{PLAYER_SERVICE_URL}/play-audio/?filename={filename}')
             response.raise_for_status()
         except httpx.HTTPStatusError as e:
+            print(e)
             raise HTTPException(status_code=response.status_code, detail="Не удалось воспроизвести файл")
         except Exception as e:
-                raise HTTPException(status_code=500, detail=f"Ошибка при воспроизведении файла: {e}")
+            print(e)
+            raise HTTPException(status_code=500, detail=f"Ошибка при воспроизведении файла: {e}")
     
     return {"message": "Конец воспроизведения"}
 

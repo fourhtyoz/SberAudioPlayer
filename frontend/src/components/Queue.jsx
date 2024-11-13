@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import UploadedAudio from "./UploadedAudio";
-import { api } from "../utils/api";
+import { api, host } from "../utils/api";
 import alertify from 'alertifyjs';
 import 'alertifyjs/build/css/alertify.css';
 import styled from "styled-components";
@@ -52,7 +52,7 @@ export default function Queue() {
     const [isPlaying, setIsPlaying] = useState(false)
 
     useEffect(() => {
-        const ws = new WebSocket("ws://localhost:8000/ws/queue/");
+        const ws = new WebSocket(`ws://${host}:8000/ws/queue/`);
         ws.onmessage = (event) => {
             const data = JSON.parse(event.data)
             if (data?.error) {
@@ -107,7 +107,7 @@ export default function Queue() {
         <div>
             {error && <SError>{error}</SError>}
             {queue.length < 1 && 'Пока в очереди ничего нет' }
-            {queue.map((item, index) => <UploadedAudio key={index} index={index} filename={item.filename} user={item.user} disabled={isPlaying} isPlaying={item.is_playing}/>)}
+            {queue.map((item, index) => <UploadedAudio key={index} index={index} filename={item.filename} user={item.user} disabled={isPlaying} isPlaying={item.is_playing} setIsPlaying={setIsPlaying} />)}
             {queue.length > 0 && <SPlayButton onClick={playAudioQueue} disabled={isPlaying}>Воспроизвести очередь</SPlayButton>}
         </div>
     );

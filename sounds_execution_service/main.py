@@ -1,8 +1,8 @@
+import os
 import grpc
 from concurrent import futures
 import audio_pb2, audio_pb2_grpc
 import time
-import os
 
 
 AUDIO_FILES_DIR = '/tmp/uploads/'
@@ -15,7 +15,7 @@ class SoundExecutionService(audio_pb2_grpc.SoundExecutionServiceServicer):
         if os.path.exists(filename):
             print(f"Starting playback for audio file: {filename}")
 
-            time.sleep(5)
+            time.sleep(5) # имитируем воспроизведение аудио
 
             return audio_pb2.PlayResponse(success=True, message="Playback started")
         else:

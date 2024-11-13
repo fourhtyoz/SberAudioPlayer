@@ -1,7 +1,13 @@
-# app/models.py
+import os
 from sqlalchemy import Column, Integer, String
-from database import Base
 from pydantic import BaseModel
+
+GITHUB_CICD = os.getenv('GITHUB_CICD')
+ENV_LOCAL = os.getenv('ENV_LOCAL')
+if GITHUB_CICD or ENV_LOCAL:
+    from backend.database import Base
+else:
+    from database import Base
 
 
 class User(Base):

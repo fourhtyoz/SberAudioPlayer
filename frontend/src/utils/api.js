@@ -1,7 +1,7 @@
 import axios from 'axios';
 
-
-export const api = axios.create({ baseURL: 'http://localhost:8000' });
+export const host = 'localhost'
+export const api = axios.create({ baseURL: `http://${host}:8000` });
 
 api.interceptors.request.use((config) => {
     const token = getToken()
